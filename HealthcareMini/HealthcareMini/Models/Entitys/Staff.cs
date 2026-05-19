@@ -1,4 +1,5 @@
 ﻿using HealthcareMini.Models.Interfaces;
+using System.ComponentModel.DataAnnotations;
 
 namespace HealthcareMini.Models.Entitys
 {
@@ -6,5 +7,8 @@ namespace HealthcareMini.Models.Entitys
     {
         //people who work in the hospital but they are not doctor or receptionist
         public double Salary { get; set; }
+
+        [MaxLength(100)]
+        public String JobTitle { get; set; } = string.Empty;
     }
 }
