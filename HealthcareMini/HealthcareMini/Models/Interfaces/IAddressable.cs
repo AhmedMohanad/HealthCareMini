@@ -5,8 +5,8 @@ namespace HealthcareMini.Models.Interfaces
 {
     public interface IAddressable
     {
-      
-        public AddressDetails Address { get; set; }
+        // this interface will be implemented by any thing who has an address
+        public AddressDetails AddressDetails { get; set; }
 
 
     }

@@ -5,5 +5,7 @@ namespace HealthcareMini.Models.Entitys
     public class Doctor : User, IEmployee
     {
         public double Salary { get; set; }
+
+        public bool IsActive { get; set; } = true;
     }
 }
