@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace HealthcareMini.Models
+namespace HealthcareMini.Models.Objects
 {
     public class ContentDetails
     {

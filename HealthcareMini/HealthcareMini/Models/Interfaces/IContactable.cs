@@ -1,4 +1,6 @@
-﻿namespace HealthcareMini.Models
+﻿using HealthcareMini.Models.Objects;
+
+namespace HealthcareMini.Models.Interfaces
    
 {
     public interface IContactable

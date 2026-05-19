@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HealthcareMini")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e30a8403a5975debc18750461757757c2a7a78f5")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5ebe48e49459578deaaf8244e4973073d45d40f9")]
 [assembly: System.Reflection.AssemblyProductAttribute("HealthcareMini")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HealthcareMini")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

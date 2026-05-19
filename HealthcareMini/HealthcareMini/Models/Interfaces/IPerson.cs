@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
-namespace HealthcareMini.Models
+namespace HealthcareMini.Models.Interfaces
 {
     public interface IPerson : IContactable , IAddressable
     {

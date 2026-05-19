@@ -1,7 +1,9 @@
 ﻿using HealthcareMini.Models.Enums;
+using HealthcareMini.Models.Interfaces;
+using HealthcareMini.Models.Objects;
 using System.ComponentModel.DataAnnotations;
 
-namespace HealthcareMini.Models
+namespace HealthcareMini.Models.Entitys
 {
     public class User : IPerson
     {
