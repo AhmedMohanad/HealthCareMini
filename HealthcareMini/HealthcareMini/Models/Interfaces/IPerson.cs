@@ -23,7 +23,7 @@ namespace HealthcareMini.Models.Interfaces
         [MaxLength(30), AllowNull]
         public string LastName{ get; set; }
 
-        public UserRole Role { get; set; }
+      
 
 
 
