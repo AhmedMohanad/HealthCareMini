@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "OgIf3/Z6Xic=",
+  "dgSpecHash": "fDz3s383gOY=",
   "success": true,
   "projectFilePath": "D:\\dotnet_projects\\HealthCareMini\\HealthcareMini\\HealthcareMini\\HealthcareMini.csproj",
   "expectedPackageFiles": [
@@ -25,6 +25,7 @@
     "C:\\Users\\GangSter\\.nuget\\packages\\microsoft.entityframeworkcore.design\\9.0.16\\microsoft.entityframeworkcore.design.9.0.16.nupkg.sha512",
     "C:\\Users\\GangSter\\.nuget\\packages\\microsoft.entityframeworkcore.relational\\9.0.16\\microsoft.entityframeworkcore.relational.9.0.16.nupkg.sha512",
     "C:\\Users\\GangSter\\.nuget\\packages\\microsoft.entityframeworkcore.sqlserver\\9.0.16\\microsoft.entityframeworkcore.sqlserver.9.0.16.nupkg.sha512",
+    "C:\\Users\\GangSter\\.nuget\\packages\\microsoft.entityframeworkcore.tools\\10.0.8\\microsoft.entityframeworkcore.tools.10.0.8.nupkg.sha512",
     "C:\\Users\\GangSter\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\9.0.16\\microsoft.extensions.caching.abstractions.9.0.16.nupkg.sha512",
     "C:\\Users\\GangSter\\.nuget\\packages\\microsoft.extensions.caching.memory\\9.0.16\\microsoft.extensions.caching.memory.9.0.16.nupkg.sha512",
     "C:\\Users\\GangSter\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\9.0.16\\microsoft.extensions.configuration.abstractions.9.0.16.nupkg.sha512",
@@ -81,7 +82,11 @@
     "C:\\Users\\GangSter\\.nuget\\packages\\system.text.json\\9.0.16\\system.text.json.9.0.16.nupkg.sha512",
     "C:\\Users\\GangSter\\.nuget\\packages\\system.threading.channels\\7.0.0\\system.threading.channels.7.0.0.nupkg.sha512",
     "C:\\Users\\GangSter\\.nuget\\packages\\system.threading.tasks.extensions\\4.5.4\\system.threading.tasks.extensions.4.5.4.nupkg.sha512",
-    "C:\\Users\\GangSter\\.nuget\\packages\\system.windows.extensions\\6.0.0\\system.windows.extensions.6.0.0.nupkg.sha512"
+    "C:\\Users\\GangSter\\.nuget\\packages\\system.windows.extensions\\6.0.0\\system.windows.extensions.6.0.0.nupkg.sha512",
+    "C:\\Users\\GangSter\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\9.0.16\\microsoft.windowsdesktop.app.ref.9.0.16.nupkg.sha512",
+    "C:\\Users\\GangSter\\.nuget\\packages\\microsoft.netcore.app.ref\\9.0.16\\microsoft.netcore.app.ref.9.0.16.nupkg.sha512",
+    "C:\\Users\\GangSter\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\9.0.16\\microsoft.aspnetcore.app.ref.9.0.16.nupkg.sha512",
+    "C:\\Users\\GangSter\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\9.0.16\\microsoft.netcore.app.host.win-x64.9.0.16.nupkg.sha512"
   ],
   "logs": []
 }
