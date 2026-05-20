@@ -31,6 +31,26 @@ build_property._RazorSourceGeneratorDebug =
 build_property.EffectiveAnalysisLevelStyle = 9.0
 build_property.EnableCodeStyleSeverity = 
 
+[D:/dotnet_projects/HealthCareMini/HealthcareMini/HealthcareMini/Views/HealthCareCenter/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSGVhbHRoQ2FyZUNlbnRlclxDcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/dotnet_projects/HealthCareMini/HealthcareMini/HealthcareMini/Views/HealthCareCenter/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSGVhbHRoQ2FyZUNlbnRlclxEZWxldGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/dotnet_projects/HealthCareMini/HealthcareMini/HealthcareMini/Views/HealthCareCenter/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSGVhbHRoQ2FyZUNlbnRlclxEZXRhaWxzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/dotnet_projects/HealthCareMini/HealthcareMini/HealthcareMini/Views/HealthCareCenter/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSGVhbHRoQ2FyZUNlbnRlclxFZGl0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/dotnet_projects/HealthCareMini/HealthcareMini/HealthcareMini/Views/HealthCareCenter/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSGVhbHRoQ2FyZUNlbnRlclxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/dotnet_projects/HealthCareMini/HealthcareMini/HealthcareMini/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 

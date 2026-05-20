@@ -1,11 +1,16 @@
 ﻿using HealthcareMini.Models.Interfaces;
 using HealthcareMini.Models.Objects;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HealthcareMini.Models.Entitys
 {
-    public class HealthCareCenter : IContactable, IAddressable
+    public class HealthCareCenter : IContactable, IAddressable , IBeneficiary
     {
+
+
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
         [Required]

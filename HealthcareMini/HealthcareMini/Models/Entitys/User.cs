@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HealthcareMini.Models.Entitys
 {
-    public class User : IPerson
+    public class User : IPerson, IBeneficiary
     {
         
 
