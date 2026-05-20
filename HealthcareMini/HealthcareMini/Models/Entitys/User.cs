@@ -16,6 +16,13 @@ namespace HealthcareMini.Models.Entitys
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
 
+        [Required]
+        public string PasswordHash { get; set; } = string.Empty;
+
+        [Required, MaxLength(150)]
+        public string Email { get; set; } = string.Empty;
+
+
         public DateTime DateOfBirth { get; set; }
 
         public DateTime DateOfRegistration { get; set; } = DateTime.Now;
@@ -23,7 +30,8 @@ namespace HealthcareMini.Models.Entitys
         // the properties above is from the IPerson interface
 
 
-        public ContentDetails ContactDetails { get; set; } = new ContentDetails();
+        [Required]
+        public ContactDetails ContactDetails { get; set; } = new ContactDetails();
 
         // the properties above is from the IContactable interface
         public AddressDetails AddressDetails { get; set; } = new AddressDetails();

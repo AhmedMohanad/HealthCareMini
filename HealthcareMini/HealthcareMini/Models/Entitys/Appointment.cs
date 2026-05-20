@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using HealthcareMini.Models.Enums;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HealthcareMini.Models.Entitys
@@ -33,6 +34,9 @@ namespace HealthcareMini.Models.Entitys
 
         [MaxLength(500)]
         public string? ReasonForVisit { get; set; }
+
+        [Required]
+        public AppointmentStatus Status { get; set; } = AppointmentStatus.Scheduled;
 
 
 

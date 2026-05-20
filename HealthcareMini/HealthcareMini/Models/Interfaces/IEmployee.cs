@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using HealthcareMini.Models.Entitys;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HealthcareMini.Models.Interfaces
@@ -7,6 +8,8 @@ namespace HealthcareMini.Models.Interfaces
     {
         // this interface will be implemented by any one how get salary 
         public Double Salary { get; set; }
+        [Required]
+        public ICollection<HealthCareCenter> HealthCareCenters { get; set; }
 
 
     }

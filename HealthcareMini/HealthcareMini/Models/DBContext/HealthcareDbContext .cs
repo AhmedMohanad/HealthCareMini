@@ -1,188 +1,110 @@
 ﻿using HealthcareMini.Models.Entitys;
-using HealthcareMini.Models.Enums;
 using HealthcareMini.Models.Objects;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-namespace HealthcareMini.Models.DBContext
 
+namespace HealthcareMini.Data
 {
-    public class HealthcareDbContext : DbContext
+    /// <summary>
+    /// Single database entry-point for the entire application.
+    ///
+    /// Inheritance strategy: Table-Per-Hierarchy (TPH)
+    ///   All User subclasses (Doctor, Patient, Receptionist, Staff, Admin)
+    ///   share the "Users" table.  EF adds a "Discriminator" column
+    ///   automatically so it knows which row belongs to which class.
+    /// </summary>
+    public class HealthcareDbContext(DbContextOptions<HealthcareDbContext> options) : DbContext(options)
     {
-
-        public HealthcareDbContext(DbContextOptions<HealthcareDbContext> options)
-    : base(options)
-        {
-        }
-
-        // DbSets
+        // ── Core tables ───────────────────────────────────────────────────
+        public DbSet<HealthCareCenter> HealthCareCenters { get; set; }
         public DbSet<User> Users { get; set; }
-        public DbSet<Admin> Admins { get; set; }
         public DbSet<Doctor> Doctors { get; set; }
         public DbSet<Patient> Patients { get; set; }
         public DbSet<Receptionist> Receptionists { get; set; }
         public DbSet<Staff> Staff { get; set; }
+        public DbSet<Admin> Admins { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
-        public DbSet<HealthCareCenter> HealthCareCenters { get; set; }
         public DbSet<MedicalRecord> MedicalRecords { get; set; }
-        public DbSet<AddressDetails> AddressDetails { get; set; }
-        public DbSet<ContentDetails> ContentDetails { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder builder)
         {
-            base.OnModelCreating(modelBuilder);
+            base.OnModelCreating(builder);
 
-            // ========== Inheritance Configuration (TPH) ==========
-            modelBuilder.Entity<User>()
-                .ToTable("Users")
-                .HasDiscriminator<string>("UserType")
-                .HasValue<Admin>("Admin")
-                .HasValue<Doctor>("Doctor")
-                .HasValue<Patient>("Patient")
-                .HasValue<Receptionist>("Receptionist")
-                .HasValue<Staff>("Staff");
+            // ── Email must be unique across all users ─────────────────────
+            builder.Entity<User>()
+                .HasIndex(u => u.Email)
+                .IsUnique();
 
-            // ========== Primary Keys ==========
-            modelBuilder.Entity<AddressDetails>()
-                .HasKey(a => a.Id);
+            // ── Owned objects: inlined into the Users table ───────────────
+            //
+            // ⚠️  NEVER call builder.Entity<ContactDetails>() or
+            //     builder.Entity<AddressDetails>() separately — that
+            //     registers them as standalone entities, which directly
+            //     conflicts with OwnsOne and causes the runtime crash:
+            //     "cannot be configured as owned because it has already
+            //      been configured as a non-owned"
+            //
+            // All configuration for owned types must live INSIDE OwnsOne().
+            //
+            builder.Entity<User>().OwnsOne(u => u.ContactDetails, cd =>
+            {
+                // List<string> → persisted as a JSON array in one column
+                // e.g.  ["07701234567","07709876543"]
+                cd.Property(c => c.PhoneNumbers)
+                  .HasColumnType("nvarchar(max)")
+                  .HasColumnName("ContactDetails_PhoneNumbers");
+            });
 
-            modelBuilder.Entity<ContentDetails>()
-                .HasKey(c => c.Id);
+            builder.Entity<User>().OwnsOne(u => u.AddressDetails, ad =>
+            {
+                // Store Province enum as its name string ("Baghdad", "Basra"…)
+                // so the DB column is human-readable
+                ad.Property(a => a.Province)
+                  .HasConversion<string>()
+                  .HasColumnName("AddressDetails_Province");
+            });
 
-            // ========== Value Conversions ==========
-            // Convert List<string> to JSON string for PhoneNumber
-            modelBuilder.Entity<ContentDetails>()
-                .Property(c => c.PhoneNumber)
-                .HasConversion(
-                    v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
-                    v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>()
-                );
-
-            // Convert Province enum to string for better readability
-            modelBuilder.Entity<AddressDetails>()
-                .Property(a => a.Province)
-                .HasConversion<string>();
-
-            // ========== Relationships ==========
-
-            // Appointment - Patient
-            modelBuilder.Entity<Appointment>()
+            // ── Appointment: prevent multiple cascade paths ───────────────
+            builder.Entity<Appointment>()
                 .HasOne(a => a.Patient)
                 .WithMany()
                 .HasForeignKey(a => a.PatientId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Appointment - Doctor
-            modelBuilder.Entity<Appointment>()
+            builder.Entity<Appointment>()
                 .HasOne(a => a.Doctor)
                 .WithMany()
                 .HasForeignKey(a => a.DoctorId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Appointment - HealthCareCenter
-            modelBuilder.Entity<Appointment>()
+            builder.Entity<Appointment>()
                 .HasOne(a => a.HealthCareCenter)
-                .WithMany(h => h.Appointments)
+                .WithMany(c => c.Appointments)
                 .HasForeignKey(a => a.HealthCareCenterId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // MedicalRecord - Doctor
-            modelBuilder.Entity<MedicalRecord>()
+            // Store enums as readable strings in the DB
+            builder.Entity<Appointment>()
+                .Property(a => a.Status)
+                .HasConversion<string>();
+
+            // ── MedicalRecord relationships ───────────────────────────────
+            builder.Entity<MedicalRecord>()
                 .HasOne(m => m.Doctor)
                 .WithMany()
-                .HasForeignKey("DoctorId")
+                .HasForeignKey(m => m.DoctorId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // MedicalRecord - Patient
-            modelBuilder.Entity<MedicalRecord>()
+            builder.Entity<MedicalRecord>()
                 .HasOne(m => m.Patient)
                 .WithMany(p => p.MedicalRecords)
-                .HasForeignKey("PatientId")
+                .HasForeignKey(m => m.PatientId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // MedicalRecord - HealthCareCenter
-            modelBuilder.Entity<MedicalRecord>()
+            builder.Entity<MedicalRecord>()
                 .HasOne(m => m.HealthCareCenter)
                 .WithMany()
-                .HasForeignKey("HealthCareCenterId")
+                .HasForeignKey(m => m.HealthCareCenterId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            // HealthCareCenter - Doctors (Many-to-Many)
-            modelBuilder.Entity<HealthCareCenter>()
-                .HasMany(h => h.Doctors)
-                .WithMany()
-                .UsingEntity(j => j.ToTable("HealthCareCenterDoctors"));
-
-            // HealthCareCenter - Receptionists (Many-to-Many)
-            modelBuilder.Entity<HealthCareCenter>()
-                .HasMany(h => h.Receptionists)
-                .WithMany()
-                .UsingEntity(j => j.ToTable("HealthCareCenterReceptionists"));
-
-            // HealthCareCenter - Staff (Many-to-Many)
-            modelBuilder.Entity<HealthCareCenter>()
-                .HasMany(h => h.Staff)
-                .WithMany()
-                .UsingEntity(j => j.ToTable("HealthCareCenterStaff"));
-
-            // ========== Property Configurations ==========
-
-            // Decimal precision for salaries
-            modelBuilder.Entity<Doctor>()
-                .Property(d => d.Salary)
-                .HasPrecision(18, 2);
-
-            modelBuilder.Entity<Receptionist>()
-                .Property(r => r.Salary)
-                .HasPrecision(18, 2);
-
-            modelBuilder.Entity<Staff>()
-                .Property(s => s.Salary)
-                .HasPrecision(18, 2);
-
-            // Indexes for better performance
-            modelBuilder.Entity<Doctor>()
-                .HasIndex(d => d.Specialization);
-
-            modelBuilder.Entity<Appointment>()
-                .HasIndex(a => a.AppointmentDate);
-
-            modelBuilder.Entity<Appointment>()
-                .HasIndex(a => new { a.DoctorId, a.AppointmentDate });
-
-            modelBuilder.Entity<User>()
-                .HasIndex(u => new { u.FirstName, u.LastName });
-
-            modelBuilder.Entity<HealthCareCenter>()
-                .HasIndex(h => h.Name)
-                .IsUnique();
-
-            // ContentDetails - Email unique constraint
-            modelBuilder.Entity<ContentDetails>()
-                .HasIndex(c => c.Email)
-                .IsUnique();
-
-            // ========== Shadow Properties for Foreign Keys ==========
-            modelBuilder.Entity<MedicalRecord>()
-                .Property<int>("DoctorId");
-
-            modelBuilder.Entity<MedicalRecord>()
-                .Property<int>("PatientId");
-
-            modelBuilder.Entity<MedicalRecord>()
-                .Property<int>("HealthCareCenterId");
-
-            // ========== Default Values ==========
-            modelBuilder.Entity<User>()
-                .Property(u => u.DateOfRegistration)
-                .HasDefaultValueSql("GETUTCDATE()");
-
-            modelBuilder.Entity<Appointment>()
-                .Property(a => a.CreatedAt)
-                .HasDefaultValueSql("GETUTCDATE()");
-
-            modelBuilder.Entity<MedicalRecord>()
-                .Property(m => m.CreatedAt)
-                .HasDefaultValueSql("GETUTCDATE()");
         }
     }
 }

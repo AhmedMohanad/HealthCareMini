@@ -10,5 +10,7 @@ namespace HealthcareMini.Models.Entitys
 
         [MaxLength(100)]
         public String JobTitle { get; set; } = string.Empty;
+        [Required]
+        public ICollection<HealthCareCenter> HealthCareCenters { get; set; } = [];
     }
 }

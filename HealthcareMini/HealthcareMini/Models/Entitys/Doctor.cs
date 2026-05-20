@@ -11,5 +11,8 @@ namespace HealthcareMini.Models.Entitys
         
         [Required,MaxLength(100)]
         public string Specialization { get; set; } = string.Empty;
+
+        [Required]
+        public ICollection<HealthCareCenter> HealthCareCenters { get; set; } = [];
     }
 }

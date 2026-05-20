@@ -1,4 +1,5 @@
-using HealthcareMini.Models.DBContext;
+
+using HealthcareMini.Data;
 using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
