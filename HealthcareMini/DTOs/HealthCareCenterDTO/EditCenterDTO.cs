@@ -1,33 +1,27 @@
 ﻿using HealthcareMini.Models.Entitys;
 using HealthcareMini.Models.Enums;
-using HealthcareMini.Models.Interfaces;
 using HealthcareMini.Models.Objects;
-
-
 
 namespace HealthcareMini.DTOs.HealthCareCenterDTO
 {
-    public class CreateCenterDTO
+    public class EditCenterDTO
     {
 
-      
-      
-      
         public string PasswordHash { get; set; } = string.Empty;
 
-       
+
         public string Email { get; set; } = string.Empty;
 
-     
+
         public string Name { get; set; } = string.Empty;
 
-   
 
-      
         public ContactDetails ContactDetails { get; set; } = new ContactDetails();
 
-       
+
         public AddressDetails AddressDetails { get; set; } = new AddressDetails();
+
+        
 
 
         // Center Informations
@@ -35,6 +29,5 @@ namespace HealthcareMini.DTOs.HealthCareCenterDTO
         public ICollection<Receptionist> Receptionists { get; set; } = [];
         public ICollection<Staff> Staff { get; set; } = [];
         public ICollection<Appointment> Appointments { get; set; } = [];
-
     }
 }

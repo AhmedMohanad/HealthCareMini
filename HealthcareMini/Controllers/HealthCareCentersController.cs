@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HealthcareMini.Models.Entitys;
 using HealthcareMini.Data;
-using HealthcareMini.Services;
+using HealthcareMini.Services.HealthCareCenterServices;
 
 [Route("api/[controller]")]
 [ApiController]

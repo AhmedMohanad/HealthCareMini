@@ -6,5 +6,6 @@ namespace HealthcareMini.Cookis
     {
 
         public void AppendAuthCookie(HttpResponse response, string token);
+        public void RemoveAuthCookie(HttpResponse response);
     }
 }

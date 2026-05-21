@@ -34,6 +34,8 @@ public class AuthController : ControllerBase
 
 
 
+    // this method is to register a health care center and it will be used by any on 
+
     [AllowAnonymous]
     [HttpPost("CenterRegister")]
     public async Task<IActionResult> HealthCareCenterRegister([FromBody] CreateCenterDTO healthcareCenter)
@@ -69,5 +71,21 @@ public class AuthController : ControllerBase
 
 
     }
+
+
+
     
+    [HttpPost("logout")]
+    [Authorize]  // User must be logged in to logout
+    public IActionResult Logout()
+    {
+        // Delete the cookie
+        _cookieService.RemoveAuthCookie(HttpContext.Response);
+
+        return Ok(new
+        {
+            message = "Logged out successfully"
+        });
+    }
+
 }
