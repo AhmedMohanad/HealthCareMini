@@ -1,4 +1,5 @@
-﻿using HealthcareMini.Models.Interfaces;
+﻿using HealthcareMini.Models.Enums;
+using HealthcareMini.Models.Interfaces;
 using HealthcareMini.Models.Objects;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -30,6 +31,8 @@ namespace HealthcareMini.Models.Entitys
 
         [Required]
         public AddressDetails AddressDetails { get; set; } = new AddressDetails();
+
+        public UserRole Role { get; set; }
 
 
         // Center Informations

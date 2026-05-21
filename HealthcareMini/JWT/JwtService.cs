@@ -5,11 +5,11 @@ using System.Text;
 
 namespace HealthcareMini.JWT
 {
-    public class JWT
+    public class JwtService
     {
 
         private readonly IConfiguration _configuration;
-        public JWT(IConfiguration configuration)
+        public JwtService(IConfiguration configuration)
         {
             _configuration = configuration;
         }

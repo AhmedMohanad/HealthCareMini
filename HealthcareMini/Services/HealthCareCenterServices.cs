@@ -32,10 +32,11 @@ namespace HealthcareMini.Services
                     Name = healthcareCenter.Name,
                     Email = healthcareCenter.Email,
                     PasswordHash = healthcareCenter.PasswordHash,
-                    IsActive = healthcareCenter.IsActive,
+                    IsActive = false,
+                    Role = UserRole.HealthCareCenter,
 
-                    // any thing else can be null or empty or default value
-                    ContactDetails = new ContactDetails
+                     // any thing else can be null or empty or default value
+                     ContactDetails = new ContactDetails
                     {
                         PhoneNumbers = healthcareCenter.ContactDetails?.PhoneNumbers ?? new List<string>()
                     },

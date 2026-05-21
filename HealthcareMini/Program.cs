@@ -1,7 +1,10 @@
 
+using HealthcareMini.Cookis;
 using HealthcareMini.Data;
-using Microsoft.EntityFrameworkCore;
+using HealthcareMini.JWT;
+using HealthcareMini.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -13,6 +16,14 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddDbContext<HealthcareDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.Configure<CookieSettings>(builder.Configuration.GetSection("CookieSettings"));
+
+
+
+builder.Services.AddScoped<HealthCareCenterServices, HealthCareCenterServices>();
+builder.Services.AddScoped<JwtService, JwtService>();
+builder.Services.AddScoped<ICookieService, CookieService>();
 
 // now the JWT authentication configuration
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

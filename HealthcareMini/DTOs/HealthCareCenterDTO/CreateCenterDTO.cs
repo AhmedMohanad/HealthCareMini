@@ -23,7 +23,6 @@ namespace HealthcareMini.DTOs.HealthCareCenterDTO
         public string Name { get; set; } = string.Empty;
 
    
-        public bool IsActive { get; set; } = true;
 
       
         public ContactDetails ContactDetails { get; set; } = new ContactDetails();

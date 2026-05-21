@@ -38,7 +38,7 @@ namespace HealthcareMini.Models.Entitys
 
         // the properties above is from the IAddressable interface
 
-        public UserRole Role { get; set; } 
+        public UserRole Role { get; set; }
 
 
 
