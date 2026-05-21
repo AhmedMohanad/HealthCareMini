@@ -1,4 +1,6 @@
 
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using HealthcareMini.Cookis;
 using HealthcareMini.Data;
 using HealthcareMini.JWT;
@@ -24,6 +26,9 @@ builder.Services.Configure<CookieSettings>(builder.Configuration.GetSection("Coo
 builder.Services.AddScoped<IHealthCareCenterServices, HealthCareCenterServices>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<ICookieService, CookieService>();
+
+builder.Services.AddValidatorsFromAssemblyContaining<CreateCenterDTOValidator>();
+
 
 // now the JWT authentication configuration
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -59,6 +64,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
 
 
 

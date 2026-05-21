@@ -1,4 +1,5 @@
-﻿using HealthcareMini.Controllers.CreationalPattrens.Factory;
+﻿using FluentValidation;
+using HealthcareMini.Controllers.CreationalPattrens.Factory;
 using HealthcareMini.Cookis;
 using HealthcareMini.Data;
 using HealthcareMini.DTOs.HealthCareCenterDTO;
@@ -45,11 +46,25 @@ public class AuthController : ControllerBase
 
     [AllowAnonymous]
     [HttpPost("CenterRegister")]
-    public async Task<IActionResult> HealthCareCenterRegister([FromBody] CreateCenterDTO healthcareCenter)
+    public async Task<IActionResult> HealthCareCenterRegister([FromBody] CreateCenterDTO healthcareCenter,
+                                                                [FromServices] IValidator<CreateCenterDTO> validator)
     {
-       
 
-        
+        //validation of the data that the user sent to us (the data that we need to register the center)
+        var validation = await validator.ValidateAsync(healthcareCenter);
+
+        if (!validation.IsValid)
+        {
+            var errors = validation.Errors
+                .GroupBy(x => x.PropertyName)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(x => x.ErrorMessage).ToArray()
+                );
+
+            return BadRequest(new { errors });
+        }
+
 
 
         var newHealthCareCenter = await _centerService.CreateAsync(healthcareCenter);  // lazzy initialization of the service 
@@ -84,12 +99,28 @@ public class AuthController : ControllerBase
     //POST: api/Auth/login
     [AllowAnonymous]
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
+    public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO, [FromServices] IValidator<LoginDTO> validator)
     {
+        // validation of the data that the user sent to us (the data that we need to login the center)
+        var validation = await validator.ValidateAsync(loginDTO);
+        if (!validation.IsValid)
+        {
+            var errors = validation.Errors
+                .GroupBy(x => x.PropertyName)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(x => x.ErrorMessage).ToArray()
+                );
 
+            return BadRequest(new { errors });
+        }
+
+        // Log the login attempt with email and timestamp
         _logger.LogWarning("login try", loginDTO.Email, DateTime.UtcNow);
+        // Find the health care center by email
         var center = await _context.HealthCareCenters
             .FirstOrDefaultAsync(c => c.Email == loginDTO.Email);
+        // Check if the center exists and the password is correct
         if (center == null || ! (loginDTO.Password == center.PasswordHash))
         {
             _logger.LogWarning("Failed login attempt for email: {Email} at {Time}", loginDTO.Email, DateTime.UtcNow);
@@ -97,10 +128,12 @@ public class AuthController : ControllerBase
             return Unauthorized(new{  message = "Invalid email or password"  });
         }
 
-
+        // Generate JWT token and set cookie
         var token = _jwt.GenerateJwtToken(center.Id, center.Email, "HealthCareCenter");
         _cookieService.AppendAuthCookie(HttpContext.Response, token);
+
         await _centerService.ActivateAsync(center.Id); // Activate the center after successful login
+        // Log the successful login with center ID and email
         _logger.LogInformation("User logged in successfully. ID: {Id}, Email: {Email}", center.Id, center.Email);
         return Ok(new
         {

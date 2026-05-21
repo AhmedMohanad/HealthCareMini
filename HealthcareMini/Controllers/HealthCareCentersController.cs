@@ -1,12 +1,14 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using HealthcareMini.Models.Entitys;
+using FluentValidation;
 using HealthcareMini.Data;
+using HealthcareMini.DTOs.HealthCareCenterDTO;
+using HealthcareMini.Migrations;
+using HealthcareMini.Models.Entitys;
 using HealthcareMini.Services.HealthCareCenterServices;
 using Microsoft.AspNetCore.Authorization;
-using HealthcareMini.Migrations;
-using HealthcareMini.DTOs.HealthCareCenterDTO;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Model;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -91,10 +93,25 @@ public class HealthCareCentersController : ControllerBase
     [HttpPut("{id}")]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = "Admin,HealthCareCenter")]
-    public async Task<IActionResult> Edit(int id, [Bind("PasswordHash,Email,Name,IsActive,ContactDetails,AddressDetails,Doctors,Receptionists,Staff,Appointments")] EditCenterDTO dto)
+    public async Task<IActionResult> Edit(int id,
+        [Bind("PasswordHash,Email,Name,IsActive,ContactDetails,AddressDetails,Doctors,Receptionists,Staff,Appointments")]
+    EditCenterDTO dto,
+       [FromServices] IValidator<EditCenterDTO> validator)
     {
-        if (dto == null)
-            return BadRequest("Invalid health care center data.");
+        // Validate the incoming DTO using FluentValidation
+        var validation = await validator.ValidateAsync(dto);
+        if (!validation.IsValid)
+        {
+            var errors = validation.Errors
+                .GroupBy(x => x.PropertyName)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(x => x.ErrorMessage).ToArray()
+                );
+
+            return BadRequest(new { errors });
+        }
+
 
         // admins can edit any health care center information, but health care center users can only edit their own center information, so we need to check the user's role and id before allowing them to edit the center information
         // users with the role of health care center can only edit their own health care center information and not other centers information to prevent unauthorized access and maintain data integrity
