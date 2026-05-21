@@ -4,9 +4,7 @@ using HealthcareMini.Models.Entitys;
 using HealthcareMini.Models.Enums;
 using HealthcareMini.Models.Interfaces;
 using HealthcareMini.Models.Objects;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
-
 
 namespace HealthcareMini.Services.HealthCareCenterServices
 {
@@ -19,17 +17,12 @@ namespace HealthcareMini.Services.HealthCareCenterServices
             _context = context;
         }
 
-        public async Task<HealthCareCenter> CreateAsync(CreateCenterDTO healthcareCenter)
+        public async Task<ResponsCenter> CreateAsync(CreateCenterDTO healthcareCenter)
         {
-
-            // create a new instance of HealthCareCenter and copy properties from the input healthcareCenter
-
             HealthCareCenter newHealthCareCenter;
 
             try
             {
-
-
                 newHealthCareCenter = new HealthCareCenter
                 {
                     Name = healthcareCenter.Name,
@@ -37,8 +30,6 @@ namespace HealthcareMini.Services.HealthCareCenterServices
                     PasswordHash = healthcareCenter.PasswordHash,
                     IsActive = false,
                     Role = UserRole.HealthCareCenter,
-
-                    // any thing else can be null or empty or default value
                     ContactDetails = new ContactDetails
                     {
                         PhoneNumbers = healthcareCenter.ContactDetails?.PhoneNumbers ?? new List<string>()
@@ -57,21 +48,27 @@ namespace HealthcareMini.Services.HealthCareCenterServices
                 };
                 _context.HealthCareCenters.Add(newHealthCareCenter);
                 await _context.SaveChangesAsync();
-
             }
             catch (Exception ex)
             {
-                // Handle exceptions (e.g., log the error, rethrow, or return a specific result)
                 throw new Exception("An error occurred while creating the health care center.", ex);
             }
 
-
-
-            return newHealthCareCenter;
+            // Return DTO
+            return new ResponsCenter
+            {
+                Email = newHealthCareCenter.Email,
+                Name = newHealthCareCenter.Name,
+                ContactDetails = newHealthCareCenter.ContactDetails,
+                AddressDetails = newHealthCareCenter.AddressDetails,
+                Doctors = newHealthCareCenter.Doctors,
+                Receptionists = newHealthCareCenter.Receptionists,
+                Staff = newHealthCareCenter.Staff,
+                Appointments = newHealthCareCenter.Appointments
+            };
         }
 
-
-        public async Task<HealthCareCenter?> EditAsync(int id, EditCenterDTO dto)
+        public async Task<ResponsCenter?> EditAsync(int id, EditCenterDTO dto)
         {
             var center = await _context.HealthCareCenters
                 .Include(h => h.ContactDetails)
@@ -81,20 +78,16 @@ namespace HealthcareMini.Services.HealthCareCenterServices
             if (center == null)
                 return null;
 
-            // Update fields directly (null ignores if not provided)
             center.Name = dto.Name ?? center.Name;
             center.Email = dto.Email ?? center.Email;
             center.PasswordHash = dto.PasswordHash ?? center.PasswordHash;
 
-            // Update ContactDetails
             if (dto.ContactDetails != null)
             {
                 center.ContactDetails ??= new ContactDetails();
                 center.ContactDetails.PhoneNumbers = dto.ContactDetails.PhoneNumbers ?? center.ContactDetails.PhoneNumbers;
-
             }
 
-            // Update AddressDetails
             if (dto.AddressDetails != null)
             {
                 center.AddressDetails ??= new AddressDetails();
@@ -105,7 +98,20 @@ namespace HealthcareMini.Services.HealthCareCenterServices
             }
 
             await _context.SaveChangesAsync();
-            return center;
+
+            // Return DTO
+            return new ResponsCenter
+            {
+                Id = center.Id,
+                Email = center.Email,
+                Name = center.Name,
+                ContactDetails = center.ContactDetails,
+                AddressDetails = center.AddressDetails,
+                Doctors = center.Doctors,
+                Receptionists = center.Receptionists,
+                Staff = center.Staff,
+                Appointments = center.Appointments
+            };
         }
 
         public async Task<bool> DeleteAsync(int id)
@@ -117,32 +123,83 @@ namespace HealthcareMini.Services.HealthCareCenterServices
             await _context.SaveChangesAsync();
             return true;
         }
-        
-        public async Task<HealthCareCenter?> GetByIdAsync(int id)
+
+        public async Task<ResponsCenter?> GetByIdAsync(int id)
         {
-            return await _context.HealthCareCenters
+            var center = await _context.HealthCareCenters
                 .Include(h => h.ContactDetails)
                 .Include(h => h.AddressDetails)
+                .Include(h => h.Doctors)
+                .Include(h => h.Receptionists)
+                .Include(h => h.Staff)
+                .Include(h => h.Appointments)
                 .FirstOrDefaultAsync(h => h.Id == id);
+
+            if (center == null)
+                return null;
+
+            // Return DTO
+            return new ResponsCenter
+            {
+                Id = center.Id,
+                Email = center.Email,
+                Name = center.Name,
+                ContactDetails = center.ContactDetails,
+                AddressDetails = center.AddressDetails,
+                Doctors = center.Doctors,
+                Receptionists = center.Receptionists,
+                Staff = center.Staff,
+                Appointments = center.Appointments
+            };
         }
 
-        public async Task<HealthCareCenter?> GetByEmailAsync(string email)
+        public async Task<ResponsCenter?> GetByEmailAsync(string email)
         {
-            return await _context.HealthCareCenters
+            var center = await _context.HealthCareCenters
                 .Include(h => h.ContactDetails)
                 .Include(h => h.AddressDetails)
+                .Include(h => h.Doctors)
+                .Include(h => h.Receptionists)
+                .Include(h => h.Staff)
+                .Include(h => h.Appointments)
                 .FirstOrDefaultAsync(h => h.Email == email);
+
+            if (center == null)
+                return null;
+
+            // Return DTO
+            return new ResponsCenter
+            {
+                Id = center.Id,
+                Email = center.Email,
+                Name = center.Name,
+                ContactDetails = center.ContactDetails,
+                AddressDetails = center.AddressDetails,
+                Doctors = center.Doctors,
+                Receptionists = center.Receptionists,
+                Staff = center.Staff,
+                Appointments = center.Appointments
+            };
         }
 
-
-        public async Task<IEnumerable<HealthCareCenter>> GetAllAsync()
+        public async Task<IEnumerable<LimitedResponsCenter>> GetAllAsync()
         {
-            return await _context.HealthCareCenters
+            var centers = await _context.HealthCareCenters
                 .Include(h => h.ContactDetails)
                 .Include(h => h.AddressDetails)
                 .ToListAsync();
+
+            // Return limited DTOs (without collections)
+            return centers.Select(center => new LimitedResponsCenter
+            {
+                Id = center.Id,
+                Email = center.Email,
+                Name = center.Name,
+                ContactDetails = center.ContactDetails,
+                AddressDetails = center.AddressDetails
+            }).ToList();
         }
-      
+
         public async Task<bool> ActivateAsync(int id)
         {
             var center = await _context.HealthCareCenters.FindAsync(id);
@@ -152,6 +209,7 @@ namespace HealthcareMini.Services.HealthCareCenterServices
             await _context.SaveChangesAsync();
             return true;
         }
+
         public async Task<bool> DeactivateAsync(int id)
         {
             var center = await _context.HealthCareCenters.FindAsync(id);
@@ -161,13 +219,28 @@ namespace HealthcareMini.Services.HealthCareCenterServices
             await _context.SaveChangesAsync();
             return true;
         }
-        public async Task<HealthCareCenter?> GetByNameAsync(string name)
+
+        public async Task<LimitedResponsCenter?> GetByNameAsync(string name)
         {
-            return await _context.HealthCareCenters
+            var center = await _context.HealthCareCenters
                 .Include(h => h.ContactDetails)
                 .Include(h => h.AddressDetails)
                 .FirstOrDefaultAsync(h => h.Name == name);
+
+            if (center == null)
+                return null;
+
+            // Return limited DTO
+            return new LimitedResponsCenter
+            {
+                Id = center.Id,
+                Email = center.Email,
+                Name = center.Name,
+                ContactDetails = center.ContactDetails,
+                AddressDetails = center.AddressDetails
+            };
         }
+
         public async Task<IEnumerable<IEmployee>> GetEmployeesAsync(int centerId)
         {
             var center = await _context.HealthCareCenters
@@ -175,8 +248,10 @@ namespace HealthcareMini.Services.HealthCareCenterServices
                 .Include(h => h.Receptionists)
                 .Include(h => h.Staff)
                 .FirstOrDefaultAsync(h => h.Id == centerId);
+
             if (center == null)
                 return Enumerable.Empty<IEmployee>();
+
             var employees = new List<IEmployee>();
             employees.AddRange(center.Doctors);
             employees.AddRange(center.Receptionists);
@@ -184,17 +259,14 @@ namespace HealthcareMini.Services.HealthCareCenterServices
             return employees;
         }
 
-        //this method return only general information about the health care center without the related entities like doctors and receptionists and staff and appointments
-        public async Task<IEnumerable<HealthCareCenter>> GetLimitedAsync()
+        public async Task<IEnumerable<LimitedResponsCenter>> GetLimitedAsync()
         {
             var centers = await _context.HealthCareCenters
-                .Select(h => new HealthCareCenter
+                .Select(h => new LimitedResponsCenter
                 {
-                    
-                    Name = h.Name,
+                    Id = h.Id,
                     Email = h.Email,
-                    IsActive = h.IsActive,
-                    
+                    Name = h.Name,
                     ContactDetails = new ContactDetails
                     {
                         PhoneNumbers = h.ContactDetails.PhoneNumbers
@@ -212,7 +284,6 @@ namespace HealthcareMini.Services.HealthCareCenterServices
             return centers;
         }
 
-        //this method is to delete the center by email
         public async Task<bool> DeleteByEmailAsync(string email)
         {
             var center = await _context.HealthCareCenters.FirstOrDefaultAsync(h => h.Email == email);
@@ -222,6 +293,5 @@ namespace HealthcareMini.Services.HealthCareCenterServices
             await _context.SaveChangesAsync();
             return true;
         }
-
     }
 }

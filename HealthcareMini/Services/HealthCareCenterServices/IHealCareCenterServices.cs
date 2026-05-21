@@ -2,48 +2,21 @@
 using HealthcareMini.Models.Entitys;
 using HealthcareMini.Models.Interfaces;
 
-
-   
-
 namespace HealthcareMini.Services.HealthCareCenterServices
+{
+    public interface IHealthCareCenterServices
     {
-        public interface IHealthCareCenterServices
-        {
-            // Creates a new health care center
-            Task<HealthCareCenter> CreateAsync(CreateCenterDTO healthcareCenter);
-
-            // Edits an existing health care center by ID
-            Task<HealthCareCenter?> EditAsync(int id, EditCenterDTO dto);
-
-            // Deletes a health care center by ID
-            Task<bool> DeleteAsync(int id);
-
-            //get a health care center by id
-            Task<HealthCareCenter?> GetByIdAsync(int id);
-
-            // get all health care centers
-            Task<IEnumerable<HealthCareCenter>> GetAllAsync();
-
-            //get a health care center by email
-            Task<HealthCareCenter?> GetByEmailAsync(string email);
-
-            // get a health care center by name
-            Task<HealthCareCenter?> GetByNameAsync(string name);
-
-            // change the status of the center to active (IsActive = true)
-            Task<bool> ActivateAsync(int id);
-
-            // change the status of the center to inactive (IsActive = false)
-            Task<bool> DeactivateAsync(int id);
-
-            // get all employees of a health care center
-            Task<IEnumerable<IEmployee>> GetEmployeesAsync(int centerId);
-
-        // this method is used to  get all Centers but without the related data 
-        // (Doctors, Receptionists, Staff, Appointments) to improve performance when we only need basic information about the centers
-
-        Task<IEnumerable<HealthCareCenter>> GetLimitedAsync();
+        Task<ResponsCenter> CreateAsync(CreateCenterDTO healthcareCenter);
+        Task<ResponsCenter?> EditAsync(int id, EditCenterDTO dto);
+        Task<bool> DeleteAsync(int id);
+        Task<ResponsCenter?> GetByIdAsync(int id);
+        Task<ResponsCenter?> GetByEmailAsync(string email);
+        Task<IEnumerable<LimitedResponsCenter>> GetAllAsync();
+        Task<bool> ActivateAsync(int id);
+        Task<bool> DeactivateAsync(int id);
+        Task<LimitedResponsCenter?> GetByNameAsync(string name);
+        Task<IEnumerable<IEmployee>> GetEmployeesAsync(int centerId);
+        Task<IEnumerable<LimitedResponsCenter>> GetLimitedAsync();
         Task<bool> DeleteByEmailAsync(string email);
     }
-    }
-
+}
