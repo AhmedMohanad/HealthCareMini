@@ -81,9 +81,35 @@ public class AuthController : ControllerBase
 
     }
 
+    //POST: api/Auth/login
+    [AllowAnonymous]
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
+    {
+
+        _logger.LogWarning("login try", loginDTO.Email, DateTime.UtcNow);
+        var center = await _context.HealthCareCenters
+            .FirstOrDefaultAsync(c => c.Email == loginDTO.Email);
+        if (center == null || ! (loginDTO.Password == center.PasswordHash))
+        {
+            _logger.LogWarning("Failed login attempt for email: {Email} at {Time}", loginDTO.Email, DateTime.UtcNow);
+
+            return Unauthorized(new{  message = "Invalid email or password"  });
+        }
 
 
-    
+        var token = _jwt.GenerateJwtToken(center.Id, center.Email, "HealthCareCenter");
+        _cookieService.AppendAuthCookie(HttpContext.Response, token);
+        await _centerService.ActivateAsync(center.Id); // Activate the center after successful login
+        _logger.LogInformation("User logged in successfully. ID: {Id}, Email: {Email}", center.Id, center.Email);
+        return Ok(new
+        {
+            message = "Logged in successfully"
+        });
+    }
+
+
+
     [HttpPost("logout")]
     [Authorize]  // User must be logged in to logout
     public async Task<IActionResult> Logout()

@@ -117,6 +117,7 @@ namespace HealthcareMini.Services.HealthCareCenterServices
             await _context.SaveChangesAsync();
             return true;
         }
+        
         public async Task<HealthCareCenter?> GetByIdAsync(int id)
         {
             return await _context.HealthCareCenters
@@ -124,6 +125,15 @@ namespace HealthcareMini.Services.HealthCareCenterServices
                 .Include(h => h.AddressDetails)
                 .FirstOrDefaultAsync(h => h.Id == id);
         }
+
+        public async Task<HealthCareCenter?> GetByEmailAsync(string email)
+        {
+            return await _context.HealthCareCenters
+                .Include(h => h.ContactDetails)
+                .Include(h => h.AddressDetails)
+                .FirstOrDefaultAsync(h => h.Email == email);
+        }
+
 
         public async Task<IEnumerable<HealthCareCenter>> GetAllAsync()
         {
