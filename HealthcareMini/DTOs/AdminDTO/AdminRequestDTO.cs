@@ -1,7 +1,7 @@
 ﻿// DTOs/Admin/AdminRequestDTO.cs
 using HealthcareMini.Models.Objects;
 
-namespace HealthcareMini.DTOs.Admin
+namespace HealthcareMini.DTOs.AdminDTO
 {
     public class AdminRequestDTO
     {
