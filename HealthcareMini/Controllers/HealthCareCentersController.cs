@@ -3,121 +3,54 @@ using Microsoft.EntityFrameworkCore;
 using HealthcareMini.Models.Entitys;
 using HealthcareMini.Data;
 using HealthcareMini.Services.HealthCareCenterServices;
+using Microsoft.AspNetCore.Authorization;
+using HealthcareMini.Migrations;
+using HealthcareMini.DTOs.HealthCareCenterDTO;
 
 [Route("api/[controller]")]
 [ApiController]
 public class HealthCareCentersController : ControllerBase
 {
     private readonly HealthcareDbContext _context;
-    private HealthCareCenterServices _services;
+    private IHealthCareCenterServices _services;
 
-    public HealthCareCentersController(HealthcareDbContext context, HealthCareCenterServices services)
+    public HealthCareCentersController(HealthcareDbContext context, IHealthCareCenterServices services)
     {
         _context = context;
-        _services = new HealthCareCenterServices(context);
+        _services = services;
     }
 
     // GET: api/HealthCareCenters
     [HttpGet]
-    [ValidateAntiForgeryToken]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAll()
     {
         
-            var centers = await _context.HealthCareCenters.ToListAsync();
-        
-       
-        return Ok(centers);
+            var centers = _services.GetAllAsync().Result; // Using .Result to get the result of the async method
+
+
+            return Ok(centers);
     }
 
-    // GET: api/HealthCareCenters/5
-    [HttpGet("{id}")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> GetById(int id)
-    {
-        var healthcarecenter = await _context.HealthCareCenters
-            .FirstOrDefaultAsync(m => m.Id == id);
-
-        if (healthcarecenter == null)
-        {
-            return NotFound(new { message = "HealthCareCenter not found" });
-        }
-
-        return Ok(healthcarecenter);
-    }
 
     // POST: api/HealthCareCenters
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("PasswordHash,Email,Name,IsActive,ContactDetails,AddressDetails,Doctors,Receptionists,Staff,Appointments")]HealthCareCenter healthcarecenter)
+    [Authorize (Roles = "Admin")] 
+    public async Task<IActionResult> Create([Bind("PasswordHash,Email,Name,IsActive,ContactDetails,AddressDetails,Doctors,Receptionists,Staff,Appointments")]CreateCenterDTO dto)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
+        if (dto == null)
+            return BadRequest("Invalid health care center data.");
 
-        _context.HealthCareCenters.Add(healthcarecenter);
-        await _context.SaveChangesAsync();
+        var result = await _services.CreateAsync(dto); 
 
-        return CreatedAtAction(
-            nameof(GetById),
-            new { id = healthcarecenter.Id },
-            healthcarecenter
-        );
+        return result != null
+            ? Ok("HealthCareCenter created successfully.")
+            : BadRequest("Failed to create HealthCareCenter.");
     }
 
-    // PUT: api/HealthCareCenters/5
-    [HttpPut("{id}")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, [Bind("PasswordHash,Email,Name,IsActive,ContactDetails,AddressDetails,Doctors,Receptionists,Staff,Appointments")]HealthCareCenter healthcarecenter)
-    {
-        if (id != healthcarecenter.Id)
-        {
-            return BadRequest(new { message = "ID mismatch" });
-        }
 
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
 
-        try
-        {
-            _context.Update(healthcarecenter);
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!HealthCareCenterExists(id))
-            {
-                return NotFound(new { message = "HealthCareCenter not found" });
-            }
-
-            throw;
-        }
-
-        return Ok(new { message = "Updated successfully" });
-    }
-
-    // DELETE: api/HealthCareCenters/5
-    [HttpDelete("{id}")]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var healthcarecenter = await _context.HealthCareCenters.FindAsync(id);
-
-        if (healthcarecenter == null)
-        {
-            return NotFound(new { message = "HealthCareCenter not found" });
-        }
-
-        _context.HealthCareCenters.Remove(healthcarecenter);
-        await _context.SaveChangesAsync();
-
-        return Ok(new { message = "Deleted successfully" });
-    }
-
-    private bool HealthCareCenterExists(int id)
-    {
-        return _context.HealthCareCenters.Any(e => e.Id == id);
-    }
+    
+    
 }

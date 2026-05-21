@@ -4,7 +4,7 @@ using HealthcareMini.Data;
 using HealthcareMini.DTOs.HealthCareCenterDTO;
 using HealthcareMini.DTOs.LoginDTO;
 using HealthcareMini.JWT;
-using HealthcareMini.Services;
+using HealthcareMini.Services.HealthCareCenterServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,12 +18,12 @@ public class AuthController : ControllerBase
     private readonly HealthcareDbContext _context;
     private AccountTypeFactory _accountTypeFactory;
     private HealthCareCenterServices _centerService;
-    private JwtService _jwt;
+    private IJwtService _jwt;
     private ICookieService _cookieService;
 
     public AuthController(IConfiguration configuration,
                           HealthcareDbContext context,
-                          JwtService jwt,
+                          IJwtService jwt,
                           ICookieService cookieService)
     {
         _configuration = configuration;
