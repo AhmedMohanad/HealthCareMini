@@ -1,49 +1,74 @@
-
 using FluentValidation;
-using FluentValidation.AspNetCore;
 using HealthcareMini.Cookis;
 using HealthcareMini.Data;
 using HealthcareMini.JWT;
+using HealthcareMini.Services.AdminServices;
+using HealthcareMini.Services.AppointmentServices;
+using HealthcareMini.Services.DoctorServices;
 using HealthcareMini.Services.HealthCareCenterServices;
+using HealthcareMini.Services.MedicalRecordServices;
+using HealthcareMini.Services.PatientServices;
+using HealthcareMini.Services.ReceptionistServices;
+using HealthcareMini.Services.StaffServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
+// ─── MVC / API ──────────────────────────────────────────────────────────────
+// Use AddControllers() for a REST API — AddControllersWithViews() is for MVC
+// with Razor views, which this project does not use.
+builder.Services.AddControllers();
 
+// ─── Database ────────────────────────────────────────────────────────────────
 builder.Services.AddDbContext<HealthcareDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// ─── Settings ────────────────────────────────────────────────────────────────
 builder.Services.Configure<CookieSettings>(builder.Configuration.GetSection("CookieSettings"));
 
-
-
-builder.Services.AddScoped<IHealthCareCenterServices, HealthCareCenterServices>();
+// ─── Infrastructure services ─────────────────────────────────────────────────
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<ICookieService, CookieService>();
 
-builder.Services.AddValidatorsFromAssemblyContaining<CreateCenterDTOValidator>();
+// ─── HealthCareCenter services ───────────────────────────────────────────────
+// Register each sub-service individually so they can be injected into both the
+// facade AND the controllers that use them directly.
+builder.Services.AddScoped<HealthCareCenterBaseService>();
+builder.Services.AddScoped<HealthCareCenterQueryService>();
+builder.Services.AddScoped<HealthCareCenterEmployeeService>();
+builder.Services.AddScoped<HealthCareCenterAppointmentService>();
+// Facade — depends on the four services above, which DI will inject.
+builder.Services.AddScoped<IHealthCareCenterServices, HealthCareCenterServices>();
 
+// ─── Domain services ─────────────────────────────────────────────────────────
+builder.Services.AddScoped<AdminService>();
+builder.Services.AddScoped<DoctorService>();
+builder.Services.AddScoped<ReceptionistService>();
+builder.Services.AddScoped<StaffService>();
+builder.Services.AddScoped<PatientService>();
+builder.Services.AddScoped<MedicalRecordService>();
+builder.Services.AddScoped<AppointmentManagementService>();
 
-// now the JWT authentication configuration
+// ─── Validation ──────────────────────────────────────────────────────────────
+// Registers ALL validators found in the assembly — no need to list them one by one.
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+// ─── JWT Authentication ───────────────────────────────────────────────────────
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        // 👇 Add this block to read token from cookie
+        // Read token from the "AuthToken" cookie in addition to the
+        // standard Authorization header.
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
             {
                 var token = context.Request.Cookies["AuthToken"];
                 if (!string.IsNullOrEmpty(token))
-                {
                     context.Token = token;
-                }
                 return Task.CompletedTask;
             }
         };
@@ -57,22 +82,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
         };
     });
 
 builder.Services.AddAuthorization();
 
+// ─── Build ────────────────────────────────────────────────────────────────────
 var app = builder.Build();
 
-
-
-
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseExceptionHandler("/error");
     app.UseHsts();
 }
 
@@ -82,13 +103,6 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-
-app.MapStaticAssets();
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
-
+app.MapControllers();
 
 app.Run();

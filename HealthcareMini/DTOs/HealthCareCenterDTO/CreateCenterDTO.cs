@@ -31,10 +31,11 @@ namespace HealthcareMini.DTOs.HealthCareCenterDTO
 
 
         // Center Informations
-        public ICollection<Doctor> Doctors { get; set; } = [];
-        public ICollection<Receptionist> Receptionists { get; set; } = [];
-        public ICollection<Staff> Staff { get; set; } = [];
-        public ICollection<Appointment> Appointments { get; set; } = [];
+        // Center Informations
+        public ICollection<HealthcareMini.Models.Entitys.Doctor> Doctors { get; set; } = [];
+        public ICollection<HealthcareMini.Models.Entitys.Receptionist> Receptionists { get; set; } = [];
+        public ICollection<HealthcareMini.Models.Entitys.Staff> Staff { get; set; } = [];
+        public ICollection<HealthcareMini.Models.Entitys.Appointment> Appointments { get; set; } = [];
 
     }
 }

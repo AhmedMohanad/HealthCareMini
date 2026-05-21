@@ -1,6 +1,7 @@
 ﻿// DTOs/Doctor/DoctorResponseDTO.cs
 using HealthcareMini.Models.Objects;
 using HealthcareMini.Models.Enums;
+using HealthcareMini.DTOs.HealthCareCenterDTO;
 
 namespace HealthcareMini.DTOs.Doctor
 {
@@ -18,6 +19,6 @@ namespace HealthcareMini.DTOs.Doctor
         public double Salary { get; set; }
         public bool IsActive { get; set; }
         public string Specialization { get; set; } = string.Empty;
-        public List<LimitedHealthCareCenterDTO> HealthCareCenters { get; set; } = [];
+        public List<LimitedResponsCenter> HealthCareCenters { get; set; } = [];
     }
 }

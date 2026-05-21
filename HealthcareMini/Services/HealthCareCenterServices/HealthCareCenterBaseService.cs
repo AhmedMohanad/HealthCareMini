@@ -42,10 +42,10 @@ namespace HealthcareMini.Services.HealthCareCenterServices
                         Province = healthcareCenter.AddressDetails?.Province ?? Province.Baghdad,
                         ZipCode = healthcareCenter.AddressDetails?.ZipCode ?? string.Empty
                     },
-                    Doctors = healthcareCenter.Doctors ?? new List<Doctor>(),
-                    Receptionists = healthcareCenter.Receptionists ?? new List<Receptionist>(),
-                    Staff = healthcareCenter.Staff ?? new List<Staff>(),
-                    Appointments = healthcareCenter.Appointments ?? new List<Appointment>()
+                    Doctors = healthcareCenter.Doctors = new List<Doctor>(),
+                    Receptionists = healthcareCenter.Receptionists = new List<Receptionist>(),
+                    Staff = healthcareCenter.Staff = new List<Staff>(),
+                    Appointments = healthcareCenter.Appointments = new List<Appointment>()
                 };
                 _context.HealthCareCenters.Add(newHealthCareCenter);
                 await _context.SaveChangesAsync();

@@ -1,16 +1,42 @@
 ﻿using HealthcareMini.Data;
+using HealthcareMini.DTOs.Doctor;
+using HealthcareMini.DTOs.Receptionist;
+using HealthcareMini.DTOs.Staff;
 using HealthcareMini.Models.Entitys;
+using HealthcareMini.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace HealthcareMini.Services.HealthCareCenterServices
 {
     public class HealthCareCenterEmployeeService : HealthCareCenterBaseService
     {
-        public HealthCareCenterEmployeeService(HealthcareDbContext context) : base(context)
+        public HealthCareCenterEmployeeService(HealthcareDbContext context) : base(context) { }
+
+        // =====================================================================
+        // DOCTOR MANAGEMENT
+        // =====================================================================
+
+        // Called from the controller with a DTO (preferred path).
+        public async Task<Doctor?> AddDoctorAsync(int centerId, DoctorRequestDTO dto)
         {
+            var doctor = new Doctor
+            {
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                Email = dto.Email,
+                PasswordHash = dto.PasswordHash,
+                DateOfBirth = dto.DateOfBirth,
+                ContactDetails = dto.ContactDetails,
+                AddressDetails = dto.AddressDetails,
+                Salary = dto.Salary,
+                Specialization = dto.Specialization,
+                IsActive = true,
+                Role = UserRole.Doctor
+            };
+            return await AddDoctorAsync(centerId, doctor);
         }
 
-        // ========== DOCTOR MANAGEMENT ==========
+        // Core implementation — also used internally and by the facade.
         public async Task<Doctor?> AddDoctorAsync(int centerId, Doctor doctor)
         {
             try
@@ -23,25 +49,23 @@ namespace HealthcareMini.Services.HealthCareCenterServices
                     return null;
 
                 if (center.Doctors.Any(d => d.Email == doctor.Email))
-                    throw new Exception("A doctor with this email already works at this center.");
+                    throw new InvalidOperationException("A doctor with this email already works at this center.");
 
-                var existingDoctor = await _context.Doctors
+                var existing = await _context.Doctors
                     .FirstOrDefaultAsync(d => d.Email == doctor.Email);
 
-                if (existingDoctor != null)
+                if (existing != null)
                 {
-                    center.Doctors.Add(existingDoctor);
+                    center.Doctors.Add(existing);
                     await _context.SaveChangesAsync();
-                    return existingDoctor;
+                    return existing;
                 }
-                else
-                {
-                    center.Doctors.Add(doctor);
-                    await _context.SaveChangesAsync();
-                    return doctor;
-                }
+
+                center.Doctors.Add(doctor);
+                await _context.SaveChangesAsync();
+                return doctor;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not InvalidOperationException)
             {
                 throw new Exception("An error occurred while adding the doctor.", ex);
             }
@@ -53,35 +77,26 @@ namespace HealthcareMini.Services.HealthCareCenterServices
             {
                 var center = await _context.HealthCareCenters
                     .Include(h => h.Doctors)
-                    .FirstOrDefaultAsync(h => h.Id == centerId);
+                    .FirstOrDefaultAsync(h => h.Id == centerId)
+                    ?? throw new Exception($"Health care center with ID {centerId} not found.");
 
-                if (center == null)
-                    throw new Exception($"Health care center with ID {centerId} not found.");
-
-                var addedDoctors = new List<Doctor>();
+                var added = new List<Doctor>();
 
                 foreach (var doctor in doctors)
                 {
-                    if (!center.Doctors.Any(d => d.Email == doctor.Email))
-                    {
-                        var existingDoctor = await _context.Doctors
-                            .FirstOrDefaultAsync(d => d.Email == doctor.Email);
+                    if (center.Doctors.Any(d => d.Email == doctor.Email))
+                        continue;
 
-                        if (existingDoctor != null)
-                        {
-                            center.Doctors.Add(existingDoctor);
-                            addedDoctors.Add(existingDoctor);
-                        }
-                        else
-                        {
-                            center.Doctors.Add(doctor);
-                            addedDoctors.Add(doctor);
-                        }
-                    }
+                    var existing = await _context.Doctors
+                        .FirstOrDefaultAsync(d => d.Email == doctor.Email);
+
+                    var target = existing ?? doctor;
+                    center.Doctors.Add(target);
+                    added.Add(target);
                 }
 
                 await _context.SaveChangesAsync();
-                return addedDoctors;
+                return added;
             }
             catch (Exception ex)
             {
@@ -97,12 +112,10 @@ namespace HealthcareMini.Services.HealthCareCenterServices
                     .Include(h => h.Doctors)
                     .FirstOrDefaultAsync(h => h.Id == centerId);
 
-                if (center == null)
-                    return false;
+                if (center == null) return false;
 
                 var doctor = center.Doctors.FirstOrDefault(d => d.Id == doctorId);
-                if (doctor == null)
-                    return false;
+                if (doctor == null) return false;
 
                 center.Doctors.Remove(doctor);
                 await _context.SaveChangesAsync();
@@ -114,7 +127,27 @@ namespace HealthcareMini.Services.HealthCareCenterServices
             }
         }
 
-        // ========== RECEPTIONIST MANAGEMENT ==========
+        // =====================================================================
+        // RECEPTIONIST MANAGEMENT
+        // =====================================================================
+
+        public async Task<Receptionist?> AddReceptionistAsync(int centerId, ReceptionistRequestDTO dto)
+        {
+            var receptionist = new Receptionist
+            {
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                Email = dto.Email,
+                PasswordHash = dto.PasswordHash,
+                DateOfBirth = dto.DateOfBirth,
+                ContactDetails = dto.ContactDetails,
+                AddressDetails = dto.AddressDetails,
+                Salary = dto.Salary,
+                Role = UserRole.Receptionist
+            };
+            return await AddReceptionistAsync(centerId, receptionist);
+        }
+
         public async Task<Receptionist?> AddReceptionistAsync(int centerId, Receptionist receptionist)
         {
             try
@@ -123,29 +156,26 @@ namespace HealthcareMini.Services.HealthCareCenterServices
                     .Include(h => h.Receptionists)
                     .FirstOrDefaultAsync(h => h.Id == centerId);
 
-                if (center == null)
-                    return null;
+                if (center == null) return null;
 
                 if (center.Receptionists.Any(r => r.Email == receptionist.Email))
-                    throw new Exception("A receptionist with this email already works at this center.");
+                    throw new InvalidOperationException("A receptionist with this email already works at this center.");
 
-                var existingReceptionist = await _context.Receptionists
+                var existing = await _context.Receptionists
                     .FirstOrDefaultAsync(r => r.Email == receptionist.Email);
 
-                if (existingReceptionist != null)
+                if (existing != null)
                 {
-                    center.Receptionists.Add(existingReceptionist);
+                    center.Receptionists.Add(existing);
                     await _context.SaveChangesAsync();
-                    return existingReceptionist;
+                    return existing;
                 }
-                else
-                {
-                    center.Receptionists.Add(receptionist);
-                    await _context.SaveChangesAsync();
-                    return receptionist;
-                }
+
+                center.Receptionists.Add(receptionist);
+                await _context.SaveChangesAsync();
+                return receptionist;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not InvalidOperationException)
             {
                 throw new Exception("An error occurred while adding the receptionist.", ex);
             }
@@ -157,35 +187,26 @@ namespace HealthcareMini.Services.HealthCareCenterServices
             {
                 var center = await _context.HealthCareCenters
                     .Include(h => h.Receptionists)
-                    .FirstOrDefaultAsync(h => h.Id == centerId);
+                    .FirstOrDefaultAsync(h => h.Id == centerId)
+                    ?? throw new Exception($"Health care center with ID {centerId} not found.");
 
-                if (center == null)
-                    throw new Exception($"Health care center with ID {centerId} not found.");
+                var added = new List<Receptionist>();
 
-                var addedReceptionists = new List<Receptionist>();
-
-                foreach (var receptionist in receptionists)
+                foreach (var r in receptionists)
                 {
-                    if (!center.Receptionists.Any(r => r.Email == receptionist.Email))
-                    {
-                        var existingReceptionist = await _context.Receptionists
-                            .FirstOrDefaultAsync(r => r.Email == receptionist.Email);
+                    if (center.Receptionists.Any(x => x.Email == r.Email))
+                        continue;
 
-                        if (existingReceptionist != null)
-                        {
-                            center.Receptionists.Add(existingReceptionist);
-                            addedReceptionists.Add(existingReceptionist);
-                        }
-                        else
-                        {
-                            center.Receptionists.Add(receptionist);
-                            addedReceptionists.Add(receptionist);
-                        }
-                    }
+                    var existing = await _context.Receptionists
+                        .FirstOrDefaultAsync(x => x.Email == r.Email);
+
+                    var target = existing ?? r;
+                    center.Receptionists.Add(target);
+                    added.Add(target);
                 }
 
                 await _context.SaveChangesAsync();
-                return addedReceptionists;
+                return added;
             }
             catch (Exception ex)
             {
@@ -201,14 +222,12 @@ namespace HealthcareMini.Services.HealthCareCenterServices
                     .Include(h => h.Receptionists)
                     .FirstOrDefaultAsync(h => h.Id == centerId);
 
-                if (center == null)
-                    return false;
+                if (center == null) return false;
 
-                var receptionist = center.Receptionists.FirstOrDefault(r => r.Id == receptionistId);
-                if (receptionist == null)
-                    return false;
+                var r = center.Receptionists.FirstOrDefault(x => x.Id == receptionistId);
+                if (r == null) return false;
 
-                center.Receptionists.Remove(receptionist);
+                center.Receptionists.Remove(r);
                 await _context.SaveChangesAsync();
                 return true;
             }
@@ -218,7 +237,28 @@ namespace HealthcareMini.Services.HealthCareCenterServices
             }
         }
 
-        // ========== STAFF MANAGEMENT ==========
+        // =====================================================================
+        // STAFF MANAGEMENT
+        // =====================================================================
+
+        public async Task<Staff?> AddStaffAsync(int centerId, StaffRequestDTO dto)
+        {
+            var staff = new Staff
+            {
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                Email = dto.Email,
+                PasswordHash = dto.PasswordHash,
+                DateOfBirth = dto.DateOfBirth,
+                ContactDetails = dto.ContactDetails,
+                AddressDetails = dto.AddressDetails,
+                Salary = dto.Salary,
+                JobTitle = dto.JobTitle,
+                Role = UserRole.Staff
+            };
+            return await AddStaffAsync(centerId, staff);
+        }
+
         public async Task<Staff?> AddStaffAsync(int centerId, Staff staff)
         {
             try
@@ -227,29 +267,26 @@ namespace HealthcareMini.Services.HealthCareCenterServices
                     .Include(h => h.Staff)
                     .FirstOrDefaultAsync(h => h.Id == centerId);
 
-                if (center == null)
-                    return null;
+                if (center == null) return null;
 
                 if (center.Staff.Any(s => s.Email == staff.Email))
-                    throw new Exception("A staff member with this email already works at this center.");
+                    throw new InvalidOperationException("A staff member with this email already works at this center.");
 
-                var existingStaff = await _context.Staff
+                var existing = await _context.Staff
                     .FirstOrDefaultAsync(s => s.Email == staff.Email);
 
-                if (existingStaff != null)
+                if (existing != null)
                 {
-                    center.Staff.Add(existingStaff);
+                    center.Staff.Add(existing);
                     await _context.SaveChangesAsync();
-                    return existingStaff;
+                    return existing;
                 }
-                else
-                {
-                    center.Staff.Add(staff);
-                    await _context.SaveChangesAsync();
-                    return staff;
-                }
+
+                center.Staff.Add(staff);
+                await _context.SaveChangesAsync();
+                return staff;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not InvalidOperationException)
             {
                 throw new Exception("An error occurred while adding the staff member.", ex);
             }
@@ -261,35 +298,26 @@ namespace HealthcareMini.Services.HealthCareCenterServices
             {
                 var center = await _context.HealthCareCenters
                     .Include(h => h.Staff)
-                    .FirstOrDefaultAsync(h => h.Id == centerId);
+                    .FirstOrDefaultAsync(h => h.Id == centerId)
+                    ?? throw new Exception($"Health care center with ID {centerId} not found.");
 
-                if (center == null)
-                    throw new Exception($"Health care center with ID {centerId} not found.");
+                var added = new List<Staff>();
 
-                var addedStaff = new List<Staff>();
-
-                foreach (var staff in staffList)
+                foreach (var s in staffList)
                 {
-                    if (!center.Staff.Any(s => s.Email == staff.Email))
-                    {
-                        var existingStaff = await _context.Staff
-                            .FirstOrDefaultAsync(s => s.Email == staff.Email);
+                    if (center.Staff.Any(x => x.Email == s.Email))
+                        continue;
 
-                        if (existingStaff != null)
-                        {
-                            center.Staff.Add(existingStaff);
-                            addedStaff.Add(existingStaff);
-                        }
-                        else
-                        {
-                            center.Staff.Add(staff);
-                            addedStaff.Add(staff);
-                        }
-                    }
+                    var existing = await _context.Staff
+                        .FirstOrDefaultAsync(x => x.Email == s.Email);
+
+                    var target = existing ?? s;
+                    center.Staff.Add(target);
+                    added.Add(target);
                 }
 
                 await _context.SaveChangesAsync();
-                return addedStaff;
+                return added;
             }
             catch (Exception ex)
             {
@@ -305,14 +333,12 @@ namespace HealthcareMini.Services.HealthCareCenterServices
                     .Include(h => h.Staff)
                     .FirstOrDefaultAsync(h => h.Id == centerId);
 
-                if (center == null)
-                    return false;
+                if (center == null) return false;
 
-                var staff = center.Staff.FirstOrDefault(s => s.Id == staffId);
-                if (staff == null)
-                    return false;
+                var s = center.Staff.FirstOrDefault(x => x.Id == staffId);
+                if (s == null) return false;
 
-                center.Staff.Remove(staff);
+                center.Staff.Remove(s);
                 await _context.SaveChangesAsync();
                 return true;
             }
