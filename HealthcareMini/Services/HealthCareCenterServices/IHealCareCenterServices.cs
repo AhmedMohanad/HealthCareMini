@@ -38,6 +38,12 @@ namespace HealthcareMini.Services.HealthCareCenterServices
 
             // get all employees of a health care center
             Task<IEnumerable<IEmployee>> GetEmployeesAsync(int centerId);
-        }
+
+        // this method is used to  get all Centers but without the related data 
+        // (Doctors, Receptionists, Staff, Appointments) to improve performance when we only need basic information about the centers
+
+        Task<IEnumerable<HealthCareCenter>> GetLimitedAsync();
+        Task<bool> DeleteByEmailAsync(string email);
+    }
     }
 

@@ -132,14 +132,7 @@ namespace HealthcareMini.Services.HealthCareCenterServices
                 .Include(h => h.AddressDetails)
                 .ToListAsync();
         }
-        public async Task<HealthCareCenter?> GetByEmailAsync(string email)
-        {
-            return await _context.HealthCareCenters
-                .Include(h => h.ContactDetails)
-                .Include(h => h.AddressDetails)
-                .FirstOrDefaultAsync(h => h.Email == email);
-        }
-
+      
         public async Task<bool> ActivateAsync(int id)
         {
             var center = await _context.HealthCareCenters.FindAsync(id);
@@ -181,5 +174,44 @@ namespace HealthcareMini.Services.HealthCareCenterServices
             return employees;
         }
 
+        //this method return only general information about the health care center without the related entities like doctors and receptionists and staff and appointments
+        public async Task<IEnumerable<HealthCareCenter>> GetLimitedAsync()
+        {
+            var centers = await _context.HealthCareCenters
+                .Select(h => new HealthCareCenter
+                {
+                    
+                    Name = h.Name,
+                    Email = h.Email,
+                    IsActive = h.IsActive,
+                    
+                    ContactDetails = new ContactDetails
+                    {
+                        PhoneNumbers = h.ContactDetails.PhoneNumbers
+                    },
+                    AddressDetails = new AddressDetails
+                    {
+                        Street = h.AddressDetails.Street,
+                        City = h.AddressDetails.City,
+                        Province = h.AddressDetails.Province,
+                        ZipCode = h.AddressDetails.ZipCode
+                    }
+                })
+                .ToListAsync();
+
+            return centers;
         }
+
+        //this method is to delete the center by email
+        public async Task<bool> DeleteByEmailAsync(string email)
+        {
+            var center = await _context.HealthCareCenters.FirstOrDefaultAsync(h => h.Email == email);
+            if (center == null)
+                return false;
+            _context.HealthCareCenters.Remove(center);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+    }
 }

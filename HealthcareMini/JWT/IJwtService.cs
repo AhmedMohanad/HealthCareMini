@@ -3,6 +3,6 @@
     public interface IJwtService
     {
 
-        public string GenerateJwtToken(string email, string role);
+        public string GenerateJwtToken(int userId, string email, string role);
     }
 }

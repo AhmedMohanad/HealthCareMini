@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using HealthcareMini.Models.Entitys;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -15,10 +16,11 @@ namespace HealthcareMini.JWT
         }
 
 
-        public string GenerateJwtToken(string email, string role)
+        public string GenerateJwtToken(int userId, string email, string role)
         {
             var claims = new[]
             {
+        new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
         new Claim(ClaimTypes.Name, email),
         new Claim(ClaimTypes.Role, role)
     };
