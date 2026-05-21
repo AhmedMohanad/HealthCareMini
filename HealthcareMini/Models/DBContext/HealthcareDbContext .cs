@@ -4,17 +4,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HealthcareMini.Data
 {
-    /// <summary>
-    /// Single database entry-point for the entire application.
-    ///
-    /// Inheritance strategy: Table-Per-Hierarchy (TPH)
-    ///   All User subclasses (Doctor, Patient, Receptionist, Staff, Admin)
-    ///   share the "Users" table.  EF adds a "Discriminator" column
-    ///   automatically so it knows which row belongs to which class.
-    /// </summary>
     public class HealthcareDbContext(DbContextOptions<HealthcareDbContext> options) : DbContext(options)
     {
-        // ── Core tables ───────────────────────────────────────────────────
         public DbSet<HealthCareCenter> HealthCareCenters { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Doctor> Doctors { get; set; }
@@ -29,26 +20,18 @@ namespace HealthcareMini.Data
         {
             base.OnModelCreating(builder);
 
-            // ── Email must be unique across all users ─────────────────────
+            // ── Email must be unique across ALL users and HealthCareCenters ──
             builder.Entity<User>()
                 .HasIndex(u => u.Email)
                 .IsUnique();
 
-            // ── Owned objects: inlined into the Users table ───────────────
-            //
-            // ⚠️  NEVER call builder.Entity<ContactDetails>() or
-            //     builder.Entity<AddressDetails>() separately — that
-            //     registers them as standalone entities, which directly
-            //     conflicts with OwnsOne and causes the runtime crash:
-            //     "cannot be configured as owned because it has already
-            //      been configured as a non-owned"
-            //
-            // All configuration for owned types must live INSIDE OwnsOne().
-            //
+            builder.Entity<HealthCareCenter>()
+                .HasIndex(h => h.Email)
+                .IsUnique();
+
+            // ── Configure owned objects for User ─────────────────────────
             builder.Entity<User>().OwnsOne(u => u.ContactDetails, cd =>
             {
-                // List<string> → persisted as a JSON array in one column
-                // e.g.  ["07701234567","07709876543"]
                 cd.Property(c => c.PhoneNumbers)
                   .HasColumnType("nvarchar(max)")
                   .HasColumnName("ContactDetails_PhoneNumbers");
@@ -56,17 +39,51 @@ namespace HealthcareMini.Data
 
             builder.Entity<User>().OwnsOne(u => u.AddressDetails, ad =>
             {
-                // Store Province enum as its name string ("Baghdad", "Basra"…)
-                // so the DB column is human-readable
                 ad.Property(a => a.Province)
                   .HasConversion<string>()
                   .HasColumnName("AddressDetails_Province");
             });
 
-            // ── Appointment: prevent multiple cascade paths ───────────────
+            // ── Configure owned objects for HealthCareCenter ──────────────
+            builder.Entity<HealthCareCenter>().OwnsOne(h => h.ContactDetails, cd =>
+            {
+                cd.Property(c => c.PhoneNumbers)
+                  .HasColumnType("nvarchar(max)")
+                  .HasColumnName("ContactDetails_PhoneNumbers");
+
+                
+            });
+
+            builder.Entity<HealthCareCenter>().OwnsOne(h => h.AddressDetails, ad =>
+            {
+                ad.Property(a => a.Province)
+                  .HasConversion<string>()
+                  .HasColumnName("AddressDetails_Province");
+            });
+
+            // ── Many-to-Many: HealthCareCenter ↔ Doctors ──────────────────
+            builder.Entity<HealthCareCenter>()
+                .HasMany(h => h.Doctors)
+                .WithMany(d => d.HealthCareCenters)
+                .UsingEntity(j => j.ToTable("HealthCareCenterDoctors"));
+
+            // ── Many-to-Many: HealthCareCenter ↔ Receptionists ────────────
+            builder.Entity<HealthCareCenter>()
+                .HasMany(h => h.Receptionists)
+                .WithMany(r => r.HealthCareCenters)
+                .UsingEntity(j => j.ToTable("HealthCareCenterReceptionists"));
+
+            // ── Many-to-Many: HealthCareCenter ↔ Staff ────────────────────
+            builder.Entity<HealthCareCenter>()
+                .HasMany(h => h.Staff)
+                .WithMany(s => s.HealthCareCenters)
+                .UsingEntity(j => j.ToTable("HealthCareCenterStaff"));
+
+            // ── Appointment relationships ─────────────────────────────────
             builder.Entity<Appointment>()
                 .HasOne(a => a.Patient)
-                .WithMany()
+                .WithMany(p => p.Appointments)
+                
                 .HasForeignKey(a => a.PatientId)
                 .OnDelete(DeleteBehavior.Restrict);
 
@@ -82,12 +99,12 @@ namespace HealthcareMini.Data
                 .HasForeignKey(a => a.HealthCareCenterId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Store enums as readable strings in the DB
+            // Store enums as readable strings
             builder.Entity<Appointment>()
                 .Property(a => a.Status)
                 .HasConversion<string>();
 
-            // ── MedicalRecord relationships ───────────────────────────────
+            // ── MedicalRecord relationships ──────────────────────────────
             builder.Entity<MedicalRecord>()
                 .HasOne(m => m.Doctor)
                 .WithMany()
@@ -102,7 +119,7 @@ namespace HealthcareMini.Data
 
             builder.Entity<MedicalRecord>()
                 .HasOne(m => m.HealthCareCenter)
-                .WithMany()
+                .WithMany(c => c.MedicalRecords)
                 .HasForeignKey(m => m.HealthCareCenterId)
                 .OnDelete(DeleteBehavior.Restrict);
         }

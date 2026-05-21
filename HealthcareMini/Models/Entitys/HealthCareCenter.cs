@@ -6,10 +6,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HealthcareMini.Models.Entitys
 {
-    public class HealthCareCenter : IContactable, IAddressable , IBeneficiary
+    public class HealthCareCenter : IContactable, IAddressable, IBeneficiary
     {
-
-
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
@@ -32,14 +30,14 @@ namespace HealthcareMini.Models.Entitys
         [Required]
         public AddressDetails AddressDetails { get; set; } = new AddressDetails();
 
-        public UserRole Role { get; set; }
+        // ✅ Keep Role - needed for authentication and authorization
+        public UserRole Role { get; set; } = UserRole.HealthCareCenter;
 
-
-        // Center Informations
+        // Navigation Properties
         public ICollection<Doctor> Doctors { get; set; } = [];
         public ICollection<Receptionist> Receptionists { get; set; } = [];
         public ICollection<Staff> Staff { get; set; } = [];
         public ICollection<Appointment> Appointments { get; set; } = [];
-        
+        public ICollection<MedicalRecord> MedicalRecords { get; set; } = [];
     }
 }

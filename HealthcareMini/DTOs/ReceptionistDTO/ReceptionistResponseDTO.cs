@@ -1,36 +1,22 @@
-﻿using HealthcareMini.Models.Enums;
-using HealthcareMini.Models.Interfaces;
+﻿// DTOs/Receptionist/ReceptionistResponseDTO.cs
 using HealthcareMini.Models.Objects;
-using System.ComponentModel.DataAnnotations;
+using HealthcareMini.Models.Enums;
+using HealthcareMini.DTOs.HealthCareCenterDTO;
 
-namespace HealthcareMini.Models.Entitys
+namespace HealthcareMini.DTOs.Receptionist
 {
-    public class User : IPerson, IBeneficiary
+    public class ReceptionistResponseDTO
     {
         public int Id { get; set; }
-
-        [Required, MaxLength(100)]
         public string FirstName { get; set; } = string.Empty;
-
-        [Required, MaxLength(100)]
         public string LastName { get; set; } = string.Empty;
-
-        [Required]
-        public string PasswordHash { get; set; } = string.Empty;
-
-        [Required, MaxLength(150)]
         public string Email { get; set; } = string.Empty;
-
         public DateTime DateOfBirth { get; set; }
-        public DateTime DateOfRegistration { get; set; } = DateTime.Now;
-
-        [Required]
+        public DateTime DateOfRegistration { get; set; }
         public ContactDetails ContactDetails { get; set; } = new ContactDetails();
-
         public AddressDetails AddressDetails { get; set; } = new AddressDetails();
-
         public UserRole Role { get; set; }
-
-      
+        public double Salary { get; set; }
+        public List<LimitedResponsCenter> HealthCareCenters { get; set; } = [];
     }
 }

@@ -4,6 +4,7 @@ using HealthcareMini.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HealthcareMini.Migrations
 {
     [DbContext(typeof(HealthcareDbContext))]
-    partial class HealthcareDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260521210708_databaseEdit")]
+    partial class databaseEdit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -93,6 +96,9 @@ namespace HealthcareMini.Migrations
                     b.Property<int>("PatientId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("PatientId1")
+                        .HasColumnType("int");
+
                     b.Property<string>("ReasonForVisit")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -111,6 +117,8 @@ namespace HealthcareMini.Migrations
                     b.HasIndex("HealthCareCenterId");
 
                     b.HasIndex("PatientId");
+
+                    b.HasIndex("PatientId1");
 
                     b.ToTable("Appointments");
                 });
@@ -371,10 +379,14 @@ namespace HealthcareMini.Migrations
                         .IsRequired();
 
                     b.HasOne("HealthcareMini.Models.Entitys.Patient", "Patient")
-                        .WithMany("Appointments")
+                        .WithMany()
                         .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("HealthcareMini.Models.Entitys.Patient", null)
+                        .WithMany("Appointments")
+                        .HasForeignKey("PatientId1");
 
                     b.Navigation("Doctor");
 

@@ -1,36 +1,19 @@
-﻿using HealthcareMini.Models.Enums;
-using HealthcareMini.Models.Interfaces;
+﻿// DTOs/Patient/PatientResponseDTO.cs
 using HealthcareMini.Models.Objects;
-using System.ComponentModel.DataAnnotations;
+using HealthcareMini.Models.Enums;
 
-namespace HealthcareMini.Models.Entitys
+namespace HealthcareMini.DTOs.Patient
 {
-    public class User : IPerson, IBeneficiary
+    public class PatientResponseDTO
     {
         public int Id { get; set; }
-
-        [Required, MaxLength(100)]
         public string FirstName { get; set; } = string.Empty;
-
-        [Required, MaxLength(100)]
         public string LastName { get; set; } = string.Empty;
-
-        [Required]
-        public string PasswordHash { get; set; } = string.Empty;
-
-        [Required, MaxLength(150)]
         public string Email { get; set; } = string.Empty;
-
         public DateTime DateOfBirth { get; set; }
-        public DateTime DateOfRegistration { get; set; } = DateTime.Now;
-
-        [Required]
+        public DateTime DateOfRegistration { get; set; }
         public ContactDetails ContactDetails { get; set; } = new ContactDetails();
-
         public AddressDetails AddressDetails { get; set; } = new AddressDetails();
-
         public UserRole Role { get; set; }
-
-      
     }
 }

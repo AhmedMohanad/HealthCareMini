@@ -8,11 +8,11 @@ namespace HealthcareMini.Models.Entitys
         public double Salary { get; set; }
 
         public bool IsActive { get; set; } = true;
-        
-        [Required,MaxLength(100)]
+
+        [Required, MaxLength(100)]
         public string Specialization { get; set; } = string.Empty;
 
-        [Required]
+        // Employee can work at multiple centers
         public ICollection<HealthCareCenter> HealthCareCenters { get; set; } = [];
     }
 }
