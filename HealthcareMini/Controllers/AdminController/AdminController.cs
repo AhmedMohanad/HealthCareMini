@@ -1,25 +1,27 @@
 ﻿// Controllers/Admin/AdminController.cs
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using HealthcareMini.Services.AdminServices;
-using HealthcareMini.Services.DoctorServices;
-using HealthcareMini.Services.ReceptionistServices;
-using HealthcareMini.Services.StaffServices;
-using HealthcareMini.Services.PatientServices;
-using HealthcareMini.Services.HealthCareCenterServices;
+using FluentValidation;
 using HealthcareMini.DTOs.Admin;
+using HealthcareMini.DTOs.AdminDTO;
 using HealthcareMini.DTOs.Doctor;
+using HealthcareMini.DTOs.HealthCareCenterDTO;
+using HealthcareMini.DTOs.Patient;
 using HealthcareMini.DTOs.Receptionist;
 using HealthcareMini.DTOs.Staff;
-using HealthcareMini.DTOs.Patient;
-using HealthcareMini.DTOs.HealthCareCenterDTO;
-using FluentValidation;
+using HealthcareMini.Services.AdminServices;
+using HealthcareMini.Services.DoctorServices;
+using HealthcareMini.Services.HealthCareCenterServices;
+using HealthcareMini.Services.PatientServices;
+using HealthcareMini.Services.ReceptionistServices;
+using HealthcareMini.Services.StaffServices;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HealthcareMini.Controllers.Admin
 {
     [Route("api/admin")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
+   [Authorize(Roles = "Admin")]
+   
     public class AdminController : ControllerBase
     {
         private readonly AdminService _adminService;
@@ -46,6 +48,47 @@ namespace HealthcareMini.Controllers.Admin
             _patientService = patientService;
             _centerCoreService = centerCoreService;
             _centerQueryService = centerQueryService;
+        }
+
+        // POST: api/admin/admins
+        // Create a new admin - only existing admins can create new admins
+        [HttpPost]
+        public async Task<IActionResult> CreateAdmin(
+            [FromBody] AdminRequestDTO dto,
+            [FromServices] IValidator<AdminRequestDTO> validator)
+        {
+            // Validate the incoming DTO using FluentValidation
+            var validation = await validator.ValidateAsync(dto);
+            if (!validation.IsValid)
+                return BadRequest(new { errors = validation.Errors });
+
+            // Check if admin with same email already exists
+            var existingAdmin = await _adminService.GetByEmailAsync(dto.Email);
+            if (existingAdmin != null)
+                return BadRequest(new { message = "An admin with this email already exists." });
+
+            var result = await _adminService.CreateAsync(dto);
+            return Ok(new { message = "Admin created successfully.", admin = result });
+        }
+
+        // GET: api/admin/admins
+        // Get all admins - only admins can view other admins
+        [HttpGet("admins")]
+        public async Task<IActionResult> GetAllAdmins()
+        {
+            var admins = await _adminService.GetAllAsync();
+            return Ok(admins);
+        }
+
+        // GET: api/admin/admins/{id}
+        // Get admin by ID - only admins can view admin details
+        [HttpGet("admins/{id}")]
+        public async Task<IActionResult> GetAdminById(int id)
+        {
+            var admin = await _adminService.GetByIdAsync(id);
+            if (admin == null)
+                return NotFound(new { message = "Admin not found." });
+            return Ok(admin);
         }
 
         // GET: api/admin/centers

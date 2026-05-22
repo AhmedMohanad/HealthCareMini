@@ -6,6 +6,7 @@ using HealthcareMini.DTOs.HealthCareCenterDTO;
 using HealthcareMini.DTOs.LoginDTO;
 using HealthcareMini.JWT;
 using HealthcareMini.Services.HealthCareCenterServices;
+using HealthcareMini.Services.UserServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,7 @@ public class AuthController : ControllerBase
     private readonly IJwtService _jwt;
     private readonly ICookieService _cookieService;
     private readonly ILogger<AuthController> _logger;
+    private readonly IUserServices _userServices;
 
 
     public AuthController(IConfiguration configuration,
@@ -30,7 +32,8 @@ public class AuthController : ControllerBase
                           IJwtService jwt,
                           ICookieService cookieService,
                           IHealthCareCenterServices centerService,
-                          ILogger<AuthController> logger)
+                          ILogger<AuthController> logger,
+                          IUserServices userServices)
     {
         _configuration = configuration;
         _context = context;
@@ -38,6 +41,7 @@ public class AuthController : ControllerBase
         _cookieService = cookieService;
         _centerService = centerService;
         _logger = logger;
+        _userServices = userServices;
     }
 
 
@@ -96,10 +100,11 @@ public class AuthController : ControllerBase
 
     }
 
+    // this method is to login a health care center and it will be used by any one
     //POST: api/Auth/login
     [AllowAnonymous]
-    [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO, [FromServices] IValidator<LoginDTO> validator)
+    [HttpPost("loginCenter")]
+    public async Task<IActionResult> CenterLogin([FromBody] LoginDTO loginDTO, [FromServices] IValidator<LoginDTO> validator)
     {
         // validation of the data that the user sent to us (the data that we need to login the center)
         var validation = await validator.ValidateAsync(loginDTO);
@@ -142,6 +147,49 @@ public class AuthController : ControllerBase
     }
 
 
+    // this method is to login a User and it will be used by any one
+    [AllowAnonymous]
+    [HttpPost("loginUser")]
+    public async Task<IActionResult> UserLogin([FromBody] LoginDTO loginDTO, [FromServices] IValidator<LoginDTO> validator)
+    {
+        // validation of the data that the user sent to us (the data that we need to login the center)
+        var validation = await validator.ValidateAsync(loginDTO);
+        if (!validation.IsValid)
+        {
+            var errors = validation.Errors
+                .GroupBy(x => x.PropertyName)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(x => x.ErrorMessage).ToArray()
+                );
+
+            return BadRequest(new { errors });
+        }
+
+        // Log the login attempt with email and timestamp
+        _logger.LogWarning("login try", loginDTO.Email, DateTime.UtcNow);
+        // Find the health care center by email
+        var user = await _userServices.GetUserByEmailAsync(loginDTO.Email);
+          
+        if (user == null || !(loginDTO.Password == user.PasswordHash))
+        {
+            _logger.LogWarning("Failed login attempt for email: {Email} at {Time}", loginDTO.Email, DateTime.UtcNow);
+
+            return Unauthorized(new { message = "Invalid email or password" });
+        }
+
+        // Generate JWT token and set cookie
+        var token = _jwt.GenerateJwtToken(user.Id, user.Email, user.Role.ToString());
+        _cookieService.AppendAuthCookie(HttpContext.Response, token);
+
+       
+        // Log the successful login with user ID and email
+        _logger.LogInformation("User logged in successfully. ID: {Id}, Email: {Email}", user.Id, user.Email);
+        return Ok(new
+        {
+            message = "Logged in successfully"
+        });
+    }
 
     [HttpPost("logout")]
     [Authorize]  // User must be logged in to logout

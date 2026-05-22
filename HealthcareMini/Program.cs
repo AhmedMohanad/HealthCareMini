@@ -10,6 +10,7 @@ using HealthcareMini.Services.MedicalRecordServices;
 using HealthcareMini.Services.PatientServices;
 using HealthcareMini.Services.ReceptionistServices;
 using HealthcareMini.Services.StaffServices;
+using HealthcareMini.Services.UserServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -51,6 +52,7 @@ builder.Services.AddScoped<StaffService>();
 builder.Services.AddScoped<PatientService>();
 builder.Services.AddScoped<MedicalRecordService>();
 builder.Services.AddScoped<AppointmentManagementService>();
+builder.Services.AddScoped<IUserServices, UserServices>();
 
 // ─── Validation ──────────────────────────────────────────────────────────────
 // Registers ALL validators found in the assembly — no need to list them one by one.
