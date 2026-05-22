@@ -24,21 +24,21 @@ namespace HealthcareMini.Controllers.Admin
     public class AdminController : ControllerBase
     {
         private readonly IAdminService _adminService;
-        private readonly DoctorService _doctorService;
-        private readonly ReceptionistService _receptionistService;
-        private readonly StaffService _staffService;
-        private readonly PatientService _patientService;
-        private readonly HealthCareCenterBaseService _centerCoreService;
-        private readonly HealthCareCenterQueryService _centerQueryService;
+        private readonly IDoctorService _doctorService;
+        private readonly IReceptionistService _receptionistService;
+        private readonly IStaffService _staffService;
+        private readonly IPatientService _patientService;
+        private readonly IHealthCareCenterBaseService _centerCoreService;
+        private readonly IHealthCareCenterQueryService _centerQueryService;
 
         public AdminController(
             IAdminService adminService,
-            DoctorService doctorService,
-            ReceptionistService receptionistService,
-            StaffService staffService,
-            PatientService patientService,
-            HealthCareCenterBaseService centerCoreService,
-            HealthCareCenterQueryService centerQueryService)
+            IDoctorService doctorService,
+            IReceptionistService receptionistService,
+            IStaffService staffService,
+            IPatientService patientService,
+            IHealthCareCenterBaseService centerCoreService,
+            IHealthCareCenterQueryService centerQueryService)
         {
             _adminService = adminService;
             _doctorService = doctorService;

@@ -1,13 +1,16 @@
 ﻿using HealthcareMini.Data;
 using HealthcareMini.Models.Entitys;
+using HealthcareMini.Services.PasswordServices;
 using Microsoft.EntityFrameworkCore;
 
 namespace HealthcareMini.Services.HealthCareCenterServices
 {
     public class HealthCareCenterAppointmentService : HealthCareCenterBaseService, IHealthCareCenterAppointmentService
     {
-        public HealthCareCenterAppointmentService(HealthcareDbContext context) : base(context)
+        private readonly IPasswordService _passwordService;
+        public HealthCareCenterAppointmentService(HealthcareDbContext context, IPasswordService passwordService) : base(context, passwordService)
         {
+            _passwordService = passwordService;
         }
 
         public async Task<Appointment?> AddAppointmentAsync(int centerId, Appointment appointment)

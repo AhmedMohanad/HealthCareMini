@@ -4,13 +4,16 @@ using HealthcareMini.DTOs.Receptionist;
 using HealthcareMini.DTOs.Staff;
 using HealthcareMini.Models.Entitys;
 using HealthcareMini.Models.Enums;
+using HealthcareMini.Services.PasswordServices;
 using Microsoft.EntityFrameworkCore;
 
 namespace HealthcareMini.Services.HealthCareCenterServices
 {
     public class HealthCareCenterEmployeeService : HealthCareCenterBaseService, IHealthCareCenterEmployeeService
     {
-        public HealthCareCenterEmployeeService(HealthcareDbContext context) : base(context) { }
+
+        private readonly IPasswordService _passwordService;
+        public HealthCareCenterEmployeeService(HealthcareDbContext context, IPasswordService passwordService) : base(context, passwordService) { }
 
         // =====================================================================
         // DOCTOR MANAGEMENT
@@ -24,7 +27,7 @@ namespace HealthcareMini.Services.HealthCareCenterServices
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
                 Email = dto.Email,
-                PasswordHash = dto.PasswordHash,
+                PasswordHash = _passwordService.HashPassword(dto.Password),
                 DateOfBirth = dto.DateOfBirth,
                 ContactDetails = dto.ContactDetails,
                 AddressDetails = dto.AddressDetails,
@@ -138,7 +141,7 @@ namespace HealthcareMini.Services.HealthCareCenterServices
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
                 Email = dto.Email,
-                PasswordHash = dto.PasswordHash,
+                PasswordHash = _passwordService.HashPassword(dto.Password),
                 DateOfBirth = dto.DateOfBirth,
                 ContactDetails = dto.ContactDetails,
                 AddressDetails = dto.AddressDetails,
@@ -248,7 +251,7 @@ namespace HealthcareMini.Services.HealthCareCenterServices
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
                 Email = dto.Email,
-                PasswordHash = dto.PasswordHash,
+                PasswordHash = _passwordService.HashPassword(dto.Password),
                 DateOfBirth = dto.DateOfBirth,
                 ContactDetails = dto.ContactDetails,
                 AddressDetails = dto.AddressDetails,

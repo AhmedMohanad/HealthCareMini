@@ -3,6 +3,7 @@ using HealthcareMini.Data;
 using HealthcareMini.DTOs.Receptionist;
 using HealthcareMini.Models.Entitys;
 using HealthcareMini.Models.Enums;
+using HealthcareMini.Services.PasswordServices;
 using Microsoft.EntityFrameworkCore;
 
 namespace HealthcareMini.Services.ReceptionistServices
@@ -10,8 +11,9 @@ namespace HealthcareMini.Services.ReceptionistServices
     public class ReceptionistService : IReceptionistService 
     { 
         private readonly HealthcareDbContext _context;
+        private readonly IPasswordService _passwordService;
 
-        public ReceptionistService(HealthcareDbContext context)
+        public ReceptionistService(HealthcareDbContext context, IPasswordService passwordService    )
         {
             _context = context;
         }
@@ -48,7 +50,7 @@ namespace HealthcareMini.Services.ReceptionistServices
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
                 Email = dto.Email,
-                PasswordHash = dto.PasswordHash,
+                PasswordHash = _passwordService.HashPassword(dto.Password),
                 DateOfBirth = dto.DateOfBirth,
                 ContactDetails = dto.ContactDetails,
                 AddressDetails = dto.AddressDetails,
@@ -90,7 +92,7 @@ namespace HealthcareMini.Services.ReceptionistServices
             receptionist.FirstName = dto.FirstName;
             receptionist.LastName = dto.LastName;
             receptionist.Email = dto.Email;
-            receptionist.PasswordHash = dto.PasswordHash;
+            receptionist.PasswordHash = _passwordService.HashPassword(dto.Password);
             receptionist.DateOfBirth = dto.DateOfBirth;
             receptionist.ContactDetails = dto.ContactDetails;
             receptionist.AddressDetails = dto.AddressDetails;

@@ -11,12 +11,12 @@ namespace HealthcareMini.Controllers
     [ApiController]
     public class HealthCareCentersController : ControllerBase
     {
-        private readonly HealthCareCenterBaseService _coreService;
-        private readonly HealthCareCenterQueryService _queryService;
+        private readonly IHealthCareCenterBaseService _coreService;
+        private readonly IHealthCareCenterQueryService _queryService;
 
         public HealthCareCentersController(
-            HealthCareCenterBaseService coreService,
-            HealthCareCenterQueryService queryService)
+            IHealthCareCenterBaseService coreService,
+            IHealthCareCenterQueryService queryService)
         {
             _coreService = coreService;
             _queryService = queryService;

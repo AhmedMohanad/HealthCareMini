@@ -20,9 +20,9 @@ namespace HealthcareMini.Validators
                 .When(x => !string.IsNullOrWhiteSpace(x.Email));
 
             // Password validation (only if provided)
-            RuleFor(x => x.PasswordHash)
+            RuleFor(x => x.Password)
                 .MinimumLength(6).WithMessage("Password must be at least 6 characters")
-                .When(x => !string.IsNullOrWhiteSpace(x.PasswordHash));
+                .When(x => !string.IsNullOrWhiteSpace(x.Password));
 
             // ContactDetails validation (only if provided)
             When(x => x.ContactDetails != null, () =>

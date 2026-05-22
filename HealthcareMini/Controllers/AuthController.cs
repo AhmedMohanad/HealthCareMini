@@ -5,7 +5,9 @@ using HealthcareMini.Data;
 using HealthcareMini.DTOs.HealthCareCenterDTO;
 using HealthcareMini.DTOs.LoginDTO;
 using HealthcareMini.JWT;
+using HealthcareMini.Models.Entitys;
 using HealthcareMini.Services.HealthCareCenterServices;
+using HealthcareMini.Services.PasswordServices;
 using HealthcareMini.Services.UserServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,6 +27,7 @@ public class AuthController : ControllerBase
     private readonly ICookieService _cookieService;
     private readonly ILogger<AuthController> _logger;
     private readonly IUserServices _userServices;
+    private readonly IPasswordService _passwordService;
 
 
     public AuthController(IConfiguration configuration,
@@ -33,7 +36,8 @@ public class AuthController : ControllerBase
                           ICookieService cookieService,
                           IHealthCareCenterServices centerService,
                           ILogger<AuthController> logger,
-                          IUserServices userServices)
+                          IUserServices userServices,
+                          IPasswordService passwordService)
     {
         _configuration = configuration;
         _context = context;
@@ -42,6 +46,7 @@ public class AuthController : ControllerBase
         _centerService = centerService;
         _logger = logger;
         _userServices = userServices;
+        _passwordService = passwordService;
     }
 
 
@@ -126,7 +131,7 @@ public class AuthController : ControllerBase
         var center = await _context.HealthCareCenters
             .FirstOrDefaultAsync(c => c.Email == loginDTO.Email);
         // Check if the center exists and the password is correct
-        if (center == null || ! (loginDTO.Password == center.PasswordHash))
+        if (center == null || !(_passwordService.VerifyPassword(loginDTO.Password, center.PasswordHash) ))
         {
             _logger.LogWarning("Failed login attempt for email: {Email} at {Time}", loginDTO.Email, DateTime.UtcNow);
 
@@ -171,7 +176,7 @@ public class AuthController : ControllerBase
         // Find the health care center by email
         var user = await _userServices.GetUserByEmailAsync(loginDTO.Email);
           
-        if (user == null || !(loginDTO.Password == user.PasswordHash))
+        if (user == null || !( _passwordService.VerifyPassword(loginDTO.Password, user.PasswordHash) ))
         {
             _logger.LogWarning("Failed login attempt for email: {Email} at {Time}", loginDTO.Email, DateTime.UtcNow);
 

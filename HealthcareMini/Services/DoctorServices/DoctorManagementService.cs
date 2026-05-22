@@ -1,6 +1,7 @@
 ﻿using HealthcareMini.Data;
 using HealthcareMini.Models.Entitys;
 using HealthcareMini.Services.DoctorServices;
+using HealthcareMini.Services.PasswordServices;
 using Microsoft.EntityFrameworkCore;
 
 namespace HealthcareMini.Services.HealthCareCenterServices
@@ -8,8 +9,11 @@ namespace HealthcareMini.Services.HealthCareCenterServices
     // Service for doctor management operations
     public class DoctorManagementService : HealthCareCenterBaseService, IDoctorManagementService
     {
-        public DoctorManagementService(HealthcareDbContext context) : base(context)
+        protected readonly IPasswordService _passwordService;
+
+        public DoctorManagementService(HealthcareDbContext context, IPasswordService passwordService) : base(context, passwordService)
         {
+            _passwordService = passwordService;
         }
 
         // Add a new doctor to a specific health care center
@@ -39,6 +43,7 @@ namespace HealthcareMini.Services.HealthCareCenterServices
                 }
                 else
                 {
+                    doctor.PasswordHash = BCrypt.Net.BCrypt.HashPassword(doctor.PasswordHash);
                     // New doctor, add them to the center
                     center.Doctors.Add(doctor);
                 }
@@ -83,6 +88,7 @@ namespace HealthcareMini.Services.HealthCareCenterServices
                         }
                         else
                         {
+                            doctor.PasswordHash = BCrypt.Net.BCrypt.HashPassword(doctor.PasswordHash);
                             // New doctor, create and add relationship
                             center.Doctors.Add(doctor);
                             addedDoctors.Add(doctor);

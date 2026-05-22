@@ -9,16 +9,16 @@ namespace HealthcareMini.Services.HealthCareCenterServices
     // which would bypass the DI container and break scoped lifetime guarantees.
     public class HealthCareCenterServices : IHealthCareCenterServices
     {
-        private readonly HealthCareCenterBaseService _coreService;
-        private readonly HealthCareCenterQueryService _queryService;
-        private readonly HealthCareCenterEmployeeService _employeeService;
-        private readonly HealthCareCenterAppointmentService _appointmentService;
+        private readonly IHealthCareCenterBaseService _coreService;
+        private readonly IHealthCareCenterQueryService _queryService;
+        private readonly IHealthCareCenterEmployeeService _employeeService;
+        private readonly IHealthCareCenterAppointmentService _appointmentService;
 
         public HealthCareCenterServices(
-            HealthCareCenterBaseService coreService,
-            HealthCareCenterQueryService queryService,
-            HealthCareCenterEmployeeService employeeService,
-            HealthCareCenterAppointmentService appointmentService)
+            IHealthCareCenterBaseService coreService,
+            IHealthCareCenterQueryService queryService,
+            IHealthCareCenterEmployeeService employeeService,
+            IHealthCareCenterAppointmentService appointmentService)
         {
             _coreService = coreService;
             _queryService = queryService;

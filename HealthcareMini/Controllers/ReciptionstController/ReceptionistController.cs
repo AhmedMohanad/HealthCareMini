@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using HealthcareMini.DTOs.Receptionist;
+using HealthcareMini.Services.PasswordServices;
 using HealthcareMini.Services.ReceptionistServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,10 +14,12 @@ namespace HealthcareMini.Controllers.ReciptionstController
     public class ReceptionistProfileController : ControllerBase
     {
         private readonly IReceptionistService _receptionistService;
+        private readonly IPasswordService _passwordService;
 
-        public ReceptionistProfileController(IReceptionistService receptionistService)
+        public ReceptionistProfileController(IReceptionistService receptionistService, IPasswordService passwordService)
         {
             _receptionistService = receptionistService;
+            _passwordService = passwordService;
         }
 
         // GET: api/receptionist/profile/me - Get current receptionist's own profile
@@ -53,7 +56,7 @@ namespace HealthcareMini.Controllers.ReciptionstController
                 FirstName = dto.FirstName ?? existing.FirstName,
                 LastName = dto.LastName ?? existing.LastName,
                 Email = dto.Email ?? existing.Email,
-                PasswordHash = dto.PasswordHash ?? existing.PasswordHash,
+                Password = _passwordService.HashPassword(dto.Password) ?? existing.PasswordHash,
 
                 ContactDetails = dto.ContactDetails ?? existing.ContactDetails,
                 AddressDetails = dto.AddressDetails ?? existing.AddressDetails,

@@ -53,8 +53,7 @@ namespace HealthcareMini.Controllers.DoctorController
                 FirstName = dto.FirstName ?? existing.FirstName,
                 LastName = dto.LastName ?? existing.LastName,
                 Email = dto.Email ?? existing.Email,
-                PasswordHash = dto.PasswordHash ?? existing.PasswordHash,
-                
+                Password = dto.Password ?? existing.PasswordHash,
                 ContactDetails = dto.ContactDetails ?? existing.ContactDetails,
                 AddressDetails = dto.AddressDetails ?? existing.AddressDetails,
                 Salary = existing.Salary,

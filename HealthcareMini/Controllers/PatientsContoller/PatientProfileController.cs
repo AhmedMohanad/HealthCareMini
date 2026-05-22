@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using HealthcareMini.DTOs.Patient;
+using HealthcareMini.Services.PasswordServices;
 using HealthcareMini.Services.PatientServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,10 +14,12 @@ namespace HealthcareMini.Controllers.PatientsContoller
     public class PatientProfileController : ControllerBase
     {
         private readonly IPatientService _patientService;
+        private readonly IPasswordService _passwordService;
 
-        public PatientProfileController(IPatientService patientService)
+        public PatientProfileController(IPatientService patientService, IPasswordService passwordService)
         {
             _patientService = patientService;
+            _passwordService = passwordService;
         }
 
         // GET: api/patient/profile/me - Get current patient's own profile
@@ -53,8 +56,7 @@ namespace HealthcareMini.Controllers.PatientsContoller
                 FirstName = dto.FirstName ?? existing.FirstName,
                 LastName = dto.LastName ?? existing.LastName,
                 Email = dto.Email ?? existing.Email,
-                PasswordHash = dto.PasswordHash ?? existing.PasswordHash,
-                
+                Password = _passwordService.HashPassword(dto.Password) ?? existing.PasswordHash,
                 ContactDetails = dto.ContactDetails ?? existing.ContactDetails,
                 AddressDetails = dto.AddressDetails ?? existing.AddressDetails
             };

@@ -3,6 +3,7 @@ using HealthcareMini.DTOs.HealthCareCenterDTO;
 using HealthcareMini.Models.Entitys;
 using HealthcareMini.Models.Enums;
 using HealthcareMini.Models.Objects;
+using HealthcareMini.Services.PasswordServices;
 using Microsoft.EntityFrameworkCore;
 
 namespace HealthcareMini.Services.HealthCareCenterServices
@@ -11,10 +12,12 @@ namespace HealthcareMini.Services.HealthCareCenterServices
     public class HealthCareCenterBaseService : IHealthCareCenterBaseService
     {
         protected readonly HealthcareDbContext _context;
+        protected readonly IPasswordService _passwordService;
 
-        public HealthCareCenterBaseService(HealthcareDbContext context)
+        public HealthCareCenterBaseService(HealthcareDbContext context, IPasswordService passwordService)
         {
             _context = context;
+            _passwordService = passwordService;
         }
 
         // Create a new health care center
@@ -28,7 +31,7 @@ namespace HealthcareMini.Services.HealthCareCenterServices
                 {
                     Name = healthcareCenter.Name,
                     Email = healthcareCenter.Email,
-                    PasswordHash = healthcareCenter.PasswordHash,
+                    PasswordHash = _passwordService.HashPassword(healthcareCenter.Password),
                     IsActive = false,
                     Role = UserRole.HealthCareCenter,
                     ContactDetails = new ContactDetails
@@ -82,7 +85,7 @@ namespace HealthcareMini.Services.HealthCareCenterServices
 
             center.Name = dto.Name ?? center.Name;
             center.Email = dto.Email ?? center.Email;
-            center.PasswordHash = dto.PasswordHash ?? center.PasswordHash;
+            center.PasswordHash = _passwordService.HashPassword(dto.Password) ?? center.PasswordHash;
 
             if (dto.ContactDetails != null)
             {

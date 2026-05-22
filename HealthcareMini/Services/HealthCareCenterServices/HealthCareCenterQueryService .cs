@@ -3,6 +3,7 @@ using HealthcareMini.DTOs.HealthCareCenterDTO;
 using HealthcareMini.Models.Entitys;
 using HealthcareMini.Models.Interfaces;
 using HealthcareMini.Models.Objects;
+using HealthcareMini.Services.PasswordServices;
 using Microsoft.EntityFrameworkCore;
 
 namespace HealthcareMini.Services.HealthCareCenterServices
@@ -10,8 +11,10 @@ namespace HealthcareMini.Services.HealthCareCenterServices
     // Service for query and read operations
     public class HealthCareCenterQueryService : HealthCareCenterBaseService , IHealthCareCenterQueryService
     {
-        public HealthCareCenterQueryService(HealthcareDbContext context) : base(context)
+        private readonly IPasswordService _passwordService; 
+        public HealthCareCenterQueryService(HealthcareDbContext context, IPasswordService passwordService) : base(context, passwordService)
         {
+            _passwordService = passwordService;
         }
 
         // Get health care center by ID with all related data

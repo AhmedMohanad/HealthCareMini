@@ -3,6 +3,7 @@ using HealthcareMini.Data;
 using HealthcareMini.DTOs.Staff;
 using HealthcareMini.Models.Entitys;
 using HealthcareMini.Models.Enums;
+using HealthcareMini.Services.PasswordServices;
 using Microsoft.EntityFrameworkCore;
 
 namespace HealthcareMini.Services.StaffServices
@@ -10,8 +11,9 @@ namespace HealthcareMini.Services.StaffServices
     public class StaffService : IStaffService
     {
         private readonly HealthcareDbContext _context;
+        private readonly IPasswordService _passwordService;
 
-        public StaffService(HealthcareDbContext context)
+        public StaffService(HealthcareDbContext context, IPasswordService passwordService)
         {
             _context = context;
         }
@@ -48,7 +50,7 @@ namespace HealthcareMini.Services.StaffServices
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
                 Email = dto.Email,
-                PasswordHash = dto.PasswordHash,
+                PasswordHash = _passwordService.HashPassword(dto.Password),
                 DateOfBirth = dto.DateOfBirth,
                 ContactDetails = dto.ContactDetails,
                 AddressDetails = dto.AddressDetails,
@@ -95,7 +97,7 @@ namespace HealthcareMini.Services.StaffServices
             staff.FirstName = dto.FirstName;
             staff.LastName = dto.LastName;
             staff.Email = dto.Email;
-            staff.PasswordHash = dto.PasswordHash;
+            staff.PasswordHash = _passwordService.HashPassword(dto.Password);
             staff.DateOfBirth = dto.DateOfBirth;
             staff.ContactDetails = dto.ContactDetails;
             staff.AddressDetails = dto.AddressDetails;

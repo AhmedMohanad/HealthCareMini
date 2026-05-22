@@ -3,17 +3,20 @@ using HealthcareMini.Data;
 using HealthcareMini.DTOs.Patient;
 using HealthcareMini.Models.Entitys;
 using HealthcareMini.Models.Enums;
+using HealthcareMini.Services.PasswordServices;
 using Microsoft.EntityFrameworkCore;
 
 namespace HealthcareMini.Services.PatientServices
 {
     public class PatientService : IPatientService
     {
+        private readonly IPasswordService _passwordService;
         private readonly HealthcareDbContext _context;
 
-        public PatientService(HealthcareDbContext context)
+        public PatientService(HealthcareDbContext context, IPasswordService passwordService)
         {
             _context = context;
+            _passwordService = passwordService;
         }
 
         public async Task<Patient?> GetByIdAsync(int id)
@@ -49,7 +52,7 @@ namespace HealthcareMini.Services.PatientServices
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
                 Email = dto.Email,
-                PasswordHash = dto.PasswordHash,
+                PasswordHash = _passwordService.HashPassword(dto.Password),
                 DateOfBirth = dto.DateOfBirth,
                 ContactDetails = dto.ContactDetails,
                 AddressDetails = dto.AddressDetails,

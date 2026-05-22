@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using HealthcareMini.DTOs.Staff;
+using HealthcareMini.Services.PasswordServices;
 using HealthcareMini.Services.StaffServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,10 +14,11 @@ namespace HealthcareMini.Controllers.StaffController
     public class StaffProfileController : ControllerBase
     {
         private readonly IStaffService _staffService;
-
-        public StaffProfileController(IStaffService staffService)
+        private readonly IPasswordService _passwordService;
+        public StaffProfileController(IStaffService staffService, IPasswordService passwordService)
         {
             _staffService = staffService;
+            _passwordService = passwordService;
         }
 
         // GET: api/staff/profile/me - Get current staff member's own profile
@@ -53,7 +55,7 @@ namespace HealthcareMini.Controllers.StaffController
                 FirstName = dto.FirstName ?? existing.FirstName,
                 LastName = dto.LastName ?? existing.LastName,
                 Email = dto.Email ?? existing.Email,
-                PasswordHash = dto.Password ?? existing.PasswordHash,
+                Password = _passwordService.HashPassword(dto.Password) ?? existing.PasswordHash,
                 DateOfBirth = dto.DateOfBirth ?? existing.DateOfBirth,
                 ContactDetails = dto.ContactDetails ?? existing.ContactDetails,
                 AddressDetails = dto.AddressDetails ?? existing.AddressDetails,

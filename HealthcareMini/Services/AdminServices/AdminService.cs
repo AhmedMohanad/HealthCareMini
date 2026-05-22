@@ -4,6 +4,7 @@ using HealthcareMini.DTOs.Admin;
 using HealthcareMini.DTOs.AdminDTO;
 using HealthcareMini.Models.Entitys;
 using HealthcareMini.Models.Enums;
+using HealthcareMini.Services.PasswordServices;
 using Microsoft.EntityFrameworkCore;
 
 namespace HealthcareMini.Services.AdminServices
@@ -11,10 +12,12 @@ namespace HealthcareMini.Services.AdminServices
     public class AdminService : IAdminService
     {
         private readonly HealthcareDbContext _context;
+        private readonly IPasswordService _passwordService;
 
-        public AdminService(HealthcareDbContext context)
+        public AdminService(HealthcareDbContext context, IPasswordService passwordService)
         {
             _context = context;
+            _passwordService = passwordService;
         }
 
         public async Task<Admin?> GetByIdAsync(int id)
@@ -46,7 +49,7 @@ namespace HealthcareMini.Services.AdminServices
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
                 Email = dto.Email,
-                PasswordHash = dto.PasswordHash,
+                PasswordHash = _passwordService.HashPassword(dto.Password) ,
                 DateOfBirth = dto.DateOfBirth,
                 ContactDetails = dto.ContactDetails,
                 AddressDetails = dto.AddressDetails,

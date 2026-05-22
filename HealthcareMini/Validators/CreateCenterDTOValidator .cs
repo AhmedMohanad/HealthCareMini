@@ -21,7 +21,7 @@ public class CreateCenterDTOValidator : AbstractValidator<CreateCenterDTO>
             .EmailAddress().WithMessage("Invalid email format")
             .MustAsync(BeUniqueEmail).WithMessage("Email already exists");
 
-        RuleFor(x => x.PasswordHash)
+        RuleFor(x => x.Password)
             .NotEmpty().WithMessage("Password is required")
             .MinimumLength(6).WithMessage("Password must be at least 6 characters");
 

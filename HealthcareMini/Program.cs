@@ -7,6 +7,7 @@ using HealthcareMini.Services.AppointmentServices;
 using HealthcareMini.Services.DoctorServices;
 using HealthcareMini.Services.HealthCareCenterServices;
 using HealthcareMini.Services.MedicalRecordServices;
+using HealthcareMini.Services.PasswordServices;
 using HealthcareMini.Services.PatientServices;
 using HealthcareMini.Services.ReceptionistServices;
 using HealthcareMini.Services.StaffServices;
@@ -53,6 +54,7 @@ builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IMedicalRecordService, MedicalRecordService>();
 builder.Services.AddScoped<AppointmentManagementService>();
 builder.Services.AddScoped<IUserServices, UserServices>();
+builder.Services.AddScoped<IPasswordService, PasswordService>();
 
 // ─── Validation ──────────────────────────────────────────────────────────────
 // Registers ALL validators found in the assembly — no need to list them one by one.
