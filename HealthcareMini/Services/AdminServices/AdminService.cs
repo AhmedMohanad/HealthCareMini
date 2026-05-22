@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HealthcareMini.Services.AdminServices
 {
-    public class AdminService
+    public class AdminService : IAdminService
     {
         private readonly HealthcareDbContext _context;
 

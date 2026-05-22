@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HealthcareMini.Services.HealthCareCenterServices
 {
-    public class HealthCareCenterEmployeeService : HealthCareCenterBaseService
+    public class HealthCareCenterEmployeeService : HealthCareCenterBaseService, IHealthCareCenterEmployeeService
     {
         public HealthCareCenterEmployeeService(HealthcareDbContext context) : base(context) { }
 

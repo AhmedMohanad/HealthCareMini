@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using HealthcareMini.Controllers.CreationalPattrens.Factory;
+
 using HealthcareMini.Cookis;
 using HealthcareMini.Data;
 using HealthcareMini.DTOs.HealthCareCenterDTO;
@@ -19,7 +19,7 @@ public class AuthController : ControllerBase
 {
     private readonly IConfiguration _configuration;
     private readonly HealthcareDbContext _context;
-    private readonly AccountTypeFactory _accountTypeFactory;
+    
     private readonly IHealthCareCenterServices _centerService;
     private readonly IJwtService _jwt;
     private readonly ICookieService _cookieService;

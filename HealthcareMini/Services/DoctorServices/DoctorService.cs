@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HealthcareMini.Services.DoctorServices
 {
-    public class DoctorService
+    public class DoctorService : IDoctorService
     {
         private readonly HealthcareDbContext _context;
 

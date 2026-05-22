@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace HealthcareMini.Services.HealthCareCenterServices
 {
     // Base service for main CRUD operations
-    public class HealthCareCenterBaseService
+    public class HealthCareCenterBaseService : IHealthCareCenterBaseService
     {
         protected readonly HealthcareDbContext _context;
 

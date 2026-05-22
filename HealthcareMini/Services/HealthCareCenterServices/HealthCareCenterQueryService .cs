@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace HealthcareMini.Services.HealthCareCenterServices
 {
     // Service for query and read operations
-    public class HealthCareCenterQueryService : HealthCareCenterBaseService
+    public class HealthCareCenterQueryService : HealthCareCenterBaseService , IHealthCareCenterQueryService
     {
         public HealthCareCenterQueryService(HealthcareDbContext context) : base(context)
         {

@@ -37,20 +37,20 @@ builder.Services.AddScoped<ICookieService, CookieService>();
 // ─── HealthCareCenter services ───────────────────────────────────────────────
 // Register each sub-service individually so they can be injected into both the
 // facade AND the controllers that use them directly.
-builder.Services.AddScoped<HealthCareCenterBaseService>();
-builder.Services.AddScoped<HealthCareCenterQueryService>();
-builder.Services.AddScoped<HealthCareCenterEmployeeService>();
-builder.Services.AddScoped<HealthCareCenterAppointmentService>();
+builder.Services.AddScoped<IHealthCareCenterBaseService, HealthCareCenterBaseService>();
+builder.Services.AddScoped<IHealthCareCenterQueryService, HealthCareCenterQueryService>();
+builder.Services.AddScoped<IHealthCareCenterEmployeeService, HealthCareCenterEmployeeService>();
+builder.Services.AddScoped<IHealthCareCenterAppointmentService, HealthCareCenterAppointmentService>();
 // Facade — depends on the four services above, which DI will inject.
 builder.Services.AddScoped<IHealthCareCenterServices, HealthCareCenterServices>();
 
 // ─── Domain services ─────────────────────────────────────────────────────────
-builder.Services.AddScoped<AdminService>();
-builder.Services.AddScoped<DoctorService>();
-builder.Services.AddScoped<ReceptionistService>();
-builder.Services.AddScoped<StaffService>();
-builder.Services.AddScoped<PatientService>();
-builder.Services.AddScoped<MedicalRecordService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IDoctorService,DoctorService>();
+builder.Services.AddScoped<IReceptionistService, ReceptionistService>();
+builder.Services.AddScoped<IStaffService, StaffService>();
+builder.Services.AddScoped<IPatientService, PatientService>();
+builder.Services.AddScoped<IMedicalRecordService, MedicalRecordService>();
 builder.Services.AddScoped<AppointmentManagementService>();
 builder.Services.AddScoped<IUserServices, UserServices>();
 

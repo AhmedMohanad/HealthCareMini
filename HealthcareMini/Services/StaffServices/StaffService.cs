@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HealthcareMini.Services.StaffServices
 {
-    public class StaffService
+    public class StaffService : IStaffService
     {
         private readonly HealthcareDbContext _context;
 
@@ -77,6 +77,39 @@ namespace HealthcareMini.Services.StaffServices
             _context.Staff.Remove(staff);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<Staff?> GetByEmailAsync(string email)
+        {
+            return await _context.Staff.FirstOrDefaultAsync(s => s.Email == email);
+        }
+
+        public async Task<Staff> UpdateAsync(int id, StaffRequestDTO dto)
+        {
+            var staff = await _context.Staff
+                .Include(s => s.ContactDetails)
+                .Include(s => s.AddressDetails)
+                .Include(s => s.HealthCareCenters)
+                .FirstOrDefaultAsync(s => s.Id == id);
+            if (staff == null) throw new Exception("Staff member not found.");
+            staff.FirstName = dto.FirstName;
+            staff.LastName = dto.LastName;
+            staff.Email = dto.Email;
+            staff.PasswordHash = dto.PasswordHash;
+            staff.DateOfBirth = dto.DateOfBirth;
+            staff.ContactDetails = dto.ContactDetails;
+            staff.AddressDetails = dto.AddressDetails;
+            staff.Salary = dto.Salary;
+            staff.JobTitle = dto.JobTitle;
+            if (dto.HealthCareCenterIds?.Any() == true)
+            {
+                var centers = await _context.HealthCareCenters
+                    .Where(c => dto.HealthCareCenterIds.Contains(c.Id))
+                    .ToListAsync();
+                staff.HealthCareCenters = centers;
+            }
+            await _context.SaveChangesAsync();
+            return staff;
         }
     }
 }

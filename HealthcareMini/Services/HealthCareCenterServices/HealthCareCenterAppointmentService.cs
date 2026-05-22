@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HealthcareMini.Services.HealthCareCenterServices
 {
-    public class HealthCareCenterAppointmentService : HealthCareCenterBaseService
+    public class HealthCareCenterAppointmentService : HealthCareCenterBaseService, IHealthCareCenterAppointmentService
     {
         public HealthCareCenterAppointmentService(HealthcareDbContext context) : base(context)
         {

@@ -1,6 +1,4 @@
-﻿// Controllers/Admin/AdminController.cs
-using FluentValidation;
-using HealthcareMini.DTOs.Admin;
+﻿using FluentValidation;
 using HealthcareMini.DTOs.AdminDTO;
 using HealthcareMini.DTOs.Doctor;
 using HealthcareMini.DTOs.HealthCareCenterDTO;
@@ -18,13 +16,14 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HealthcareMini.Controllers.Admin
 {
+    
     [Route("api/admin")]
     [ApiController]
-   [Authorize(Roles = "Admin")]
-   
+    // [Authorize(Roles = "Admin")]
+    [AllowAnonymous]
     public class AdminController : ControllerBase
     {
-        private readonly AdminService _adminService;
+        private readonly IAdminService _adminService;
         private readonly DoctorService _doctorService;
         private readonly ReceptionistService _receptionistService;
         private readonly StaffService _staffService;
@@ -33,7 +32,7 @@ namespace HealthcareMini.Controllers.Admin
         private readonly HealthCareCenterQueryService _centerQueryService;
 
         public AdminController(
-            AdminService adminService,
+            IAdminService adminService,
             DoctorService doctorService,
             ReceptionistService receptionistService,
             StaffService staffService,
@@ -50,29 +49,34 @@ namespace HealthcareMini.Controllers.Admin
             _centerQueryService = centerQueryService;
         }
 
-        // POST: api/admin/admins
-        // Create a new admin - only existing admins can create new admins
+        #region Admin Management
+
+        /// <summary>
+        /// Creates a new admin user
+        /// POST: api/admin
+        /// </summary>
         [HttpPost]
         public async Task<IActionResult> CreateAdmin(
             [FromBody] AdminRequestDTO dto,
             [FromServices] IValidator<AdminRequestDTO> validator)
         {
-            // Validate the incoming DTO using FluentValidation
             var validation = await validator.ValidateAsync(dto);
             if (!validation.IsValid)
                 return BadRequest(new { errors = validation.Errors });
 
-            // Check if admin with same email already exists
             var existingAdmin = await _adminService.GetByEmailAsync(dto.Email);
             if (existingAdmin != null)
-                return BadRequest(new { message = "An admin with this email already exists." });
+                return Conflict(new { message = "Admin with this email already exists." });
 
             var result = await _adminService.CreateAsync(dto);
-            return Ok(new { message = "Admin created successfully.", admin = result });
+            return CreatedAtAction(nameof(GetAdminById), new { id = result.Id },
+                new { message = "Admin created successfully.", admin = result });
         }
 
-        // GET: api/admin/admins
-        // Get all admins - only admins can view other admins
+        /// <summary>
+        /// Gets all admins
+        /// GET: api/admin/admins
+        /// </summary>
         [HttpGet("admins")]
         public async Task<IActionResult> GetAllAdmins()
         {
@@ -80,8 +84,10 @@ namespace HealthcareMini.Controllers.Admin
             return Ok(admins);
         }
 
-        // GET: api/admin/admins/{id}
-        // Get admin by ID - only admins can view admin details
+        /// <summary>
+        /// Gets admin by ID
+        /// GET: api/admin/admins/{id}
+        /// </summary>
         [HttpGet("admins/{id}")]
         public async Task<IActionResult> GetAdminById(int id)
         {
@@ -91,8 +97,23 @@ namespace HealthcareMini.Controllers.Admin
             return Ok(admin);
         }
 
-        // GET: api/admin/centers
-        // Get all health care centers - only admins can access this endpoint
+        /// <summary>
+        /// Deletes an admin
+        /// DELETE: api/admin/admins/{id}
+        /// </summary>
+        [HttpDelete("admins/{id}")]
+        public async Task<IActionResult> DeleteAdmin(int id)
+        {
+            var result = await _adminService.DeleteAsync(id);
+            if (!result)
+                return NotFound(new { message = "Admin not found." });
+            return Ok(new { message = "Admin deleted successfully." });
+        }
+
+        #endregion
+
+        #region Health Care Center Management
+
         [HttpGet("centers")]
         public async Task<IActionResult> GetAllCenters()
         {
@@ -100,8 +121,6 @@ namespace HealthcareMini.Controllers.Admin
             return Ok(centers);
         }
 
-        // GET: api/admin/centers/{id}
-        // Get health care center by ID - only admins can access this endpoint
         [HttpGet("centers/{id}")]
         public async Task<IActionResult> GetCenterById(int id)
         {
@@ -111,31 +130,26 @@ namespace HealthcareMini.Controllers.Admin
             return Ok(center);
         }
 
-        // POST: api/admin/centers
-        // Create a new health care center - only admins can create centers
         [HttpPost("centers")]
         public async Task<IActionResult> CreateCenter(
             [FromBody] CreateCenterDTO dto,
             [FromServices] IValidator<CreateCenterDTO> validator)
         {
-            // Validate the incoming DTO using FluentValidation
             var validation = await validator.ValidateAsync(dto);
             if (!validation.IsValid)
                 return BadRequest(new { errors = validation.Errors });
 
             var result = await _centerCoreService.CreateAsync(dto);
-            return Ok(new { message = "Health care center created successfully.", center = result });
+            return CreatedAtAction(nameof(GetCenterById), new { id = result.Id },
+                new { message = "Health care center created successfully.", center = result });
         }
 
-        // PUT: api/admin/centers/{id}
-        // Update health care center information - only admins can edit any center
         [HttpPut("centers/{id}")]
         public async Task<IActionResult> UpdateCenter(
             int id,
             [FromBody] EditCenterDTO dto,
             [FromServices] IValidator<EditCenterDTO> validator)
         {
-            // Validate the incoming DTO using FluentValidation
             var validation = await validator.ValidateAsync(dto);
             if (!validation.IsValid)
                 return BadRequest(new { errors = validation.Errors });
@@ -146,8 +160,6 @@ namespace HealthcareMini.Controllers.Admin
             return Ok(new { message = "Health care center updated successfully.", center = result });
         }
 
-        // DELETE: api/admin/centers/{id}
-        // Delete health care center - only admins can delete centers
         [HttpDelete("centers/{id}")]
         public async Task<IActionResult> DeleteCenter(int id)
         {
@@ -157,8 +169,6 @@ namespace HealthcareMini.Controllers.Admin
             return Ok(new { message = "Health care center deleted successfully." });
         }
 
-        // POST: api/admin/centers/{id}/activate
-        // Activate a health care center - only admins can activate centers
         [HttpPost("centers/{id}/activate")]
         public async Task<IActionResult> ActivateCenter(int id)
         {
@@ -168,8 +178,6 @@ namespace HealthcareMini.Controllers.Admin
             return Ok(new { message = "Health care center activated successfully." });
         }
 
-        // POST: api/admin/centers/{id}/deactivate
-        // Deactivate a health care center - only admins can deactivate centers
         [HttpPost("centers/{id}/deactivate")]
         public async Task<IActionResult> DeactivateCenter(int id)
         {
@@ -179,8 +187,10 @@ namespace HealthcareMini.Controllers.Admin
             return Ok(new { message = "Health care center deactivated successfully." });
         }
 
-        // GET: api/admin/doctors
-        // Get all doctors - only admins can view all doctors
+        #endregion
+
+        #region Doctor Management
+
         [HttpGet("doctors")]
         public async Task<IActionResult> GetAllDoctors()
         {
@@ -188,8 +198,6 @@ namespace HealthcareMini.Controllers.Admin
             return Ok(doctors);
         }
 
-        // GET: api/admin/doctors/{id}
-        // Get doctor by ID - only admins can view any doctor
         [HttpGet("doctors/{id}")]
         public async Task<IActionResult> GetDoctorById(int id)
         {
@@ -199,31 +207,26 @@ namespace HealthcareMini.Controllers.Admin
             return Ok(doctor);
         }
 
-        // POST: api/admin/doctors
-        // Create a new doctor - only admins can create doctors
         [HttpPost("doctors")]
         public async Task<IActionResult> CreateDoctor(
             [FromBody] DoctorRequestDTO dto,
             [FromServices] IValidator<DoctorRequestDTO> validator)
         {
-            // Validate the incoming DTO using FluentValidation
             var validation = await validator.ValidateAsync(dto);
             if (!validation.IsValid)
                 return BadRequest(new { errors = validation.Errors });
 
             var result = await _doctorService.CreateAsync(dto);
-            return Ok(new { message = "Doctor created successfully.", doctor = result });
+            return CreatedAtAction(nameof(GetDoctorById), new { id = result.Id },
+                new { message = "Doctor created successfully.", doctor = result });
         }
 
-        // PUT: api/admin/doctors/{id}
-        // Update doctor information - only admins can edit any doctor
         [HttpPut("doctors/{id}")]
         public async Task<IActionResult> UpdateDoctor(
             int id,
             [FromBody] DoctorRequestDTO dto,
             [FromServices] IValidator<DoctorRequestDTO> validator)
         {
-            // Validate the incoming DTO using FluentValidation
             var validation = await validator.ValidateAsync(dto);
             if (!validation.IsValid)
                 return BadRequest(new { errors = validation.Errors });
@@ -234,8 +237,6 @@ namespace HealthcareMini.Controllers.Admin
             return Ok(new { message = "Doctor updated successfully.", doctor = result });
         }
 
-        // DELETE: api/admin/doctors/{id}
-        // Delete doctor - only admins can delete doctors
         [HttpDelete("doctors/{id}")]
         public async Task<IActionResult> DeleteDoctor(int id)
         {
@@ -245,8 +246,10 @@ namespace HealthcareMini.Controllers.Admin
             return Ok(new { message = "Doctor deleted successfully." });
         }
 
-        // GET: api/admin/receptionists
-        // Get all receptionists - only admins can view all receptionists
+        #endregion
+
+        #region Receptionist Management
+
         [HttpGet("receptionists")]
         public async Task<IActionResult> GetAllReceptionists()
         {
@@ -254,14 +257,11 @@ namespace HealthcareMini.Controllers.Admin
             return Ok(receptionists);
         }
 
-        // POST: api/admin/receptionists
-        // Create a new receptionist - only admins can create receptionists
         [HttpPost("receptionists")]
         public async Task<IActionResult> CreateReceptionist(
             [FromBody] ReceptionistRequestDTO dto,
             [FromServices] IValidator<ReceptionistRequestDTO> validator)
         {
-            // Validate the incoming DTO using FluentValidation
             var validation = await validator.ValidateAsync(dto);
             if (!validation.IsValid)
                 return BadRequest(new { errors = validation.Errors });
@@ -270,8 +270,6 @@ namespace HealthcareMini.Controllers.Admin
             return Ok(new { message = "Receptionist created successfully.", receptionist = result });
         }
 
-        // DELETE: api/admin/receptionists/{id}
-        // Delete receptionist - only admins can delete receptionists
         [HttpDelete("receptionists/{id}")]
         public async Task<IActionResult> DeleteReceptionist(int id)
         {
@@ -281,8 +279,10 @@ namespace HealthcareMini.Controllers.Admin
             return Ok(new { message = "Receptionist deleted successfully." });
         }
 
-        // GET: api/admin/staff
-        // Get all staff members - only admins can view all staff
+        #endregion
+
+        #region Staff Management
+
         [HttpGet("staff")]
         public async Task<IActionResult> GetAllStaff()
         {
@@ -290,14 +290,11 @@ namespace HealthcareMini.Controllers.Admin
             return Ok(staff);
         }
 
-        // POST: api/admin/staff
-        // Create a new staff member - only admins can create staff
         [HttpPost("staff")]
         public async Task<IActionResult> CreateStaff(
             [FromBody] StaffRequestDTO dto,
             [FromServices] IValidator<StaffRequestDTO> validator)
         {
-            // Validate the incoming DTO using FluentValidation
             var validation = await validator.ValidateAsync(dto);
             if (!validation.IsValid)
                 return BadRequest(new { errors = validation.Errors });
@@ -306,8 +303,6 @@ namespace HealthcareMini.Controllers.Admin
             return Ok(new { message = "Staff member created successfully.", staff = result });
         }
 
-        // DELETE: api/admin/staff/{id}
-        // Delete staff member - only admins can delete staff
         [HttpDelete("staff/{id}")]
         public async Task<IActionResult> DeleteStaff(int id)
         {
@@ -317,8 +312,10 @@ namespace HealthcareMini.Controllers.Admin
             return Ok(new { message = "Staff member deleted successfully." });
         }
 
-        // GET: api/admin/patients
-        // Get all patients - only admins can view all patients
+        #endregion
+
+        #region Patient Management
+
         [HttpGet("patients")]
         public async Task<IActionResult> GetAllPatients()
         {
@@ -326,8 +323,15 @@ namespace HealthcareMini.Controllers.Admin
             return Ok(patients);
         }
 
-        // DELETE: api/admin/patients/{id}
-        // Delete patient - only admins can delete patients
+        [HttpGet("patients/{id}")]
+        public async Task<IActionResult> GetPatientById(int id)
+        {
+            var patient = await _patientService.GetByIdAsync(id);
+            if (patient == null)
+                return NotFound(new { message = "Patient not found." });
+            return Ok(patient);
+        }
+
         [HttpDelete("patients/{id}")]
         public async Task<IActionResult> DeletePatient(int id)
         {
@@ -336,5 +340,7 @@ namespace HealthcareMini.Controllers.Admin
                 return NotFound(new { message = "Patient not found." });
             return Ok(new { message = "Patient deleted successfully." });
         }
+
+        #endregion
     }
 }

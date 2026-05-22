@@ -12,9 +12,17 @@ using System.Security.Claims;
 
 namespace HealthcareMini.Controllers
 {
+    /// <summary>
+    /// Center Employee Controller - Manages employees within a healthcare center
+    /// Rule B: HealthCareCenter can do anything in HIS center (create/update employees, 
+    /// but cannot delete the center itself or modify other centers)
+    /// Rule C: Receptionist can manage records, staff, patients (no delete)
+    /// Rule D: Staff can only view medical records and centers/doctors
+    /// Rule E: Patient data is protected - only doctors, receptionists, and center admins can see
+    /// </summary>
     [Route("api/center/employees")]
     [ApiController]
-    [Authorize(Roles = "HealthCareCenter")]
+    [Authorize(Roles = "HealthCareCenter,Receptionist,Staff")]
     public class CenterEmployeeController : ControllerBase
     {
         private readonly HealthCareCenterEmployeeService _employeeService;
@@ -37,38 +45,60 @@ namespace HealthcareMini.Controllers
             _centerQueryService = centerQueryService;
         }
 
-        // Returns the ID of the currently authenticated health care center.
+        /// <summary>
+        /// Gets the current authenticated center's ID
+        /// </summary>
         private async Task<int> GetCurrentCenterIdAsync()
         {
             var email = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(email))
+                return 0;
+
             var center = await _centerQueryService.GetByEmailAsync(email!);
             return center?.Id ?? 0;
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // DOCTORS
-        // ─────────────────────────────────────────────────────────────────────
+        /// <summary>
+        /// Checks if current user has write permissions (not Staff)
+        /// Staff can only READ, not WRITE
+        /// </summary>
+        private bool HasWritePermission()
+        {
+            return User.IsInRole("HealthCareCenter") || User.IsInRole("Receptionist");
+        }
 
-        // GET api/center/employees/doctors
+        #region Doctors
+
+        /// <summary>
+        /// GET: api/center/employees/doctors
+        /// Access: HealthCareCenter, Receptionist, Staff (all can view)
+        /// </summary>
         [HttpGet("doctors")]
         public async Task<IActionResult> GetDoctors()
         {
             var centerId = await GetCurrentCenterIdAsync();
+            if (centerId == 0)
+                return Unauthorized(new { message = "Center not found for authenticated user." });
+
             var doctors = await _doctorService.GetDoctorsByCenterAsync(centerId);
             return Ok(doctors);
         }
 
-        // POST api/center/employees/doctors
-        // Previously passed DoctorRequestDTO directly to a service method that
-        // expected a Doctor entity — compile error / runtime crash.
-        // Now calls the DTO-accepting overload added to HealthCareCenterEmployeeService.
+        /// <summary>
+        /// POST: api/center/employees/doctors
+        /// Access: HealthCareCenter, Receptionist (Staff cannot create)
+        /// </summary>
         [HttpPost("doctors")]
+        [Authorize(Roles = "HealthCareCenter,Receptionist")]
         public async Task<IActionResult> AddDoctor(
             [FromBody] DoctorRequestDTO dto,
             [FromServices] IValidator<DoctorRequestDTO> validator)
         {
+            if (!HasWritePermission())
+                return Forbid("You don't have permission to add doctors.");
+
             if (dto is null)
-                return BadRequest("Invalid doctor data.");
+                return BadRequest(new { message = "Invalid doctor data." });
 
             var validation = await validator.ValidateAsync(dto);
             if (!validation.IsValid)
@@ -76,7 +106,7 @@ namespace HealthcareMini.Controllers
 
             var centerId = await GetCurrentCenterIdAsync();
             if (centerId == 0)
-                return Unauthorized("Center not found for the authenticated user.");
+                return Unauthorized(new { message = "Center not found for authenticated user." });
 
             var result = await _employeeService.AddDoctorAsync(centerId, dto);
             return result is null
@@ -84,39 +114,47 @@ namespace HealthcareMini.Controllers
                 : Ok(new { message = "Doctor added successfully.", doctor = result });
         }
 
-        // DELETE api/center/employees/doctors/{doctorId}
+        /// <summary>
+        /// DELETE: api/center/employees/doctors/{doctorId}
+        /// Access: HealthCareCenter ONLY (Receptionist cannot delete)
+        /// </summary>
         [HttpDelete("doctors/{doctorId:int}")]
+        [Authorize(Roles = "HealthCareCenter")]
         public async Task<IActionResult> RemoveDoctor(int doctorId)
         {
             var centerId = await GetCurrentCenterIdAsync();
+            if (centerId == 0)
+                return Unauthorized(new { message = "Center not found for authenticated user." });
+
             var result = await _employeeService.RemoveDoctorFromCenterAsync(centerId, doctorId);
             return result
                 ? Ok(new { message = "Doctor removed successfully." })
                 : NotFound(new { message = "Doctor or center not found." });
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // RECEPTIONISTS
-        // ─────────────────────────────────────────────────────────────────────
+        #endregion
 
-        // GET api/center/employees/receptionists
+        #region Receptionists
+
         [HttpGet("receptionists")]
         public async Task<IActionResult> GetReceptionists()
         {
             var centerId = await GetCurrentCenterIdAsync();
+            if (centerId == 0)
+                return Unauthorized(new { message = "Center not found for authenticated user." });
+
             var receptionists = await _receptionistService.GetReceptionistsByCenterAsync(centerId);
             return Ok(receptionists);
         }
 
-        // POST api/center/employees/receptionists
-        // Same fix as AddDoctor — DTO-accepting overload used instead of entity method.
         [HttpPost("receptionists")]
+        [Authorize(Roles = "HealthCareCenter")]
         public async Task<IActionResult> AddReceptionist(
             [FromBody] ReceptionistRequestDTO dto,
             [FromServices] IValidator<ReceptionistRequestDTO> validator)
         {
             if (dto is null)
-                return BadRequest("Invalid receptionist data.");
+                return BadRequest(new { message = "Invalid receptionist data." });
 
             var validation = await validator.ValidateAsync(dto);
             if (!validation.IsValid)
@@ -124,7 +162,7 @@ namespace HealthcareMini.Controllers
 
             var centerId = await GetCurrentCenterIdAsync();
             if (centerId == 0)
-                return Unauthorized("Center not found for the authenticated user.");
+                return Unauthorized(new { message = "Center not found for authenticated user." });
 
             var result = await _employeeService.AddReceptionistAsync(centerId, dto);
             return result is null
@@ -132,8 +170,8 @@ namespace HealthcareMini.Controllers
                 : Ok(new { message = "Receptionist added successfully.", receptionist = result });
         }
 
-        // DELETE api/center/employees/receptionists/{receptionistId}
         [HttpDelete("receptionists/{receptionistId:int}")]
+        [Authorize(Roles = "HealthCareCenter")]
         public async Task<IActionResult> RemoveReceptionist(int receptionistId)
         {
             var centerId = await GetCurrentCenterIdAsync();
@@ -143,30 +181,29 @@ namespace HealthcareMini.Controllers
                 : NotFound(new { message = "Receptionist or center not found." });
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // STAFF
-        // ─────────────────────────────────────────────────────────────────────
+        #endregion
 
-        // GET api/center/employees/staff
+        #region Staff
+
         [HttpGet("staff")]
         public async Task<IActionResult> GetStaff()
         {
             var centerId = await GetCurrentCenterIdAsync();
+            if (centerId == 0)
+                return Unauthorized(new { message = "Center not found for authenticated user." });
+
             var staff = await _staffService.GetStaffByCenterAsync(centerId);
             return Ok(staff);
         }
 
-        // POST api/center/employees/staff
-        // BUG 1: [HttpPost("staff")] attribute was MISSING — the method was
-        //         unreachable by any HTTP request.
-        // BUG 2: Same DTO/entity type mismatch as AddDoctor; fixed with DTO overload.
         [HttpPost("staff")]
+        [Authorize(Roles = "HealthCareCenter")]
         public async Task<IActionResult> AddStaff(
             [FromBody] StaffRequestDTO dto,
             [FromServices] IValidator<StaffRequestDTO> validator)
         {
             if (dto is null)
-                return BadRequest("Invalid staff data.");
+                return BadRequest(new { message = "Invalid staff data." });
 
             var validation = await validator.ValidateAsync(dto);
             if (!validation.IsValid)
@@ -174,7 +211,7 @@ namespace HealthcareMini.Controllers
 
             var centerId = await GetCurrentCenterIdAsync();
             if (centerId == 0)
-                return Unauthorized("Center not found for the authenticated user.");
+                return Unauthorized(new { message = "Center not found for authenticated user." });
 
             var result = await _employeeService.AddStaffAsync(centerId, dto);
             return result is null
@@ -182,8 +219,8 @@ namespace HealthcareMini.Controllers
                 : Ok(new { message = "Staff member added successfully.", staff = result });
         }
 
-        // DELETE api/center/employees/staff/{staffId}
         [HttpDelete("staff/{staffId:int}")]
+        [Authorize(Roles = "HealthCareCenter")]
         public async Task<IActionResult> RemoveStaff(int staffId)
         {
             var centerId = await GetCurrentCenterIdAsync();
@@ -192,5 +229,7 @@ namespace HealthcareMini.Controllers
                 ? Ok(new { message = "Staff member removed successfully." })
                 : NotFound(new { message = "Staff member or center not found." });
         }
+
+        #endregion
     }
 }

@@ -1,11 +1,12 @@
 ﻿using HealthcareMini.Data;
 using HealthcareMini.Models.Entitys;
+using HealthcareMini.Services.DoctorServices;
 using Microsoft.EntityFrameworkCore;
 
 namespace HealthcareMini.Services.HealthCareCenterServices
 {
     // Service for doctor management operations
-    public class DoctorManagementService : HealthCareCenterBaseService
+    public class DoctorManagementService : HealthCareCenterBaseService, IDoctorManagementService
     {
         public DoctorManagementService(HealthcareDbContext context) : base(context)
         {
